@@ -29,6 +29,11 @@ namespace CarDealership.Models
         [Display(Name = "Модел")]
         public string Model { get; set; } = string.Empty;
 
+        [Required]
+        [Display(Name = "Снимка (файл)")]
+        public string? ImageFileName { get; set; }
+
+
         [Range(1920, 2100)]
         [Display(Name = "Година")]
         public int Year { get; set; }
