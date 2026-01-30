@@ -1,0 +1,45 @@
+﻿@model IEnumerable<CarDealership.Models.Car>
+@{
+    ViewData["Title"] = "Наем";
+    var q = ViewBag.Query as string;
+}
+
+<h1 class="mb-3">Автомобили под наем</h1>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-12 col-md-9">
+        <input name="q" value="@q" class="form-control" placeholder="Търси..." />
+    </div>
+    <div class="col-12 col-md-3 d-grid">
+        <button class="btn btn-primary" type="submit">Търси</button>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Няма налични автомобили под наем.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var car in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@car.Brand @car.Model (@car.Year)</h5>
+                        <p class="card-text mb-1"><strong>Цена: @car.RentPricePerDay евро./ден</strong></p>
+                        <p class="card-text mb-1">Км: @car.Mileage</p>
+                        <p class="card-text mb-1">@car.Engine • @car.HorsePower hp</p>
+                        <p class="card-text mb-2">@car.FuelType • @car.Transmission</p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a asp-action="Details" asp-route-id="@car.Id" class="btn btn-outline-primary btn-sm w-100">
+                            Детайли
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

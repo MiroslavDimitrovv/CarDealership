@@ -1,0 +1,35 @@
+﻿@model CarDealership.Models.Car
+@{
+    ViewData["Title"] = "Детайли";
+}
+
+<a asp-action="Index" class="btn btn-link mb-3">← Назад</a>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="card-title">@Model.Brand @Model.Model (@Model.Year)</h2>
+        <p class="lead"><strong>Цена за наем: @Model.RentPricePerDay:0.## лв./ден</strong></p>
+
+        <dl class="row">
+            <dt class="col-sm-3">Километраж</dt>
+            <dd class="col-sm-9">@Model.Mileage</dd>
+
+            <dt class="col-sm-3">Двигател</dt>
+            <dd class="col-sm-9">@Model.Engine</dd>
+
+            <dt class="col-sm-3">Конски сили</dt>
+            <dd class="col-sm-9">@Model.HorsePower</dd>
+
+            <dt class="col-sm-3">Гориво</dt>
+            <dd class="col-sm-9">@Model.FuelType</dd>
+
+            <dt class="col-sm-3">Скорости</dt>
+            <dd class="col-sm-9">@Model.Transmission</dd>
+
+            <dt class="col-sm-3">Описание</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+        </dl>
+
+        <button class="btn btn-success" disabled>Наеми (следваща стъпка)</button>
+    </div>
+</div>
