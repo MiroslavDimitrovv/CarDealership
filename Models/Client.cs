@@ -24,7 +24,7 @@ namespace CarDealership.Models
         [Required]
         [Display(Name = "Имейл")]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;   
 
         [Display(Name = "ЕГН")]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "ЕГН трябва да е точно 10 цифри.")]
