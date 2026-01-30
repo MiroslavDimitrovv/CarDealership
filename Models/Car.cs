@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 
 namespace CarDealership.Models
 {
@@ -22,6 +24,9 @@ namespace CarDealership.Models
         public int Id { get; set; }
 
         [Required]
+        public string OwnerId { get; set; } = string.Empty;
+
+        [Required]
         [Display(Name = "Марка")]
         public string Brand { get; set; } = string.Empty;
 
@@ -29,7 +34,6 @@ namespace CarDealership.Models
         [Display(Name = "Модел")]
         public string Model { get; set; } = string.Empty;
 
-        [Required]
         [Display(Name = "Снимка (файл)")]
         public string? ImageFileName { get; set; }
 

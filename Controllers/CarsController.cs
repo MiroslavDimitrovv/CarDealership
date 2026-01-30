@@ -7,25 +7,30 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CarDealership.Data;
 using CarDealership.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+
+
 
 namespace CarDealership.Controllers
 {
     public class CarsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public CarsController(ApplicationDbContext context)
+
+        public CarsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
-        // GET: Cars
         public async Task<IActionResult> Index()
         {
             return View(await _context.Cars.ToListAsync());
         }
 
-        // GET: Cars/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -43,21 +48,19 @@ namespace CarDealership.Controllers
             return View(car);
         }
 
-        // GET: Cars/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Cars/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Brand,Model,Year,Description,Mileage,Engine,HorsePower,FuelType,Transmission,Type,SalePrice,RentPricePerDay,Status")] Car car)
         {
             if (ModelState.IsValid)
             {
+                car.OwnerId = _userManager.GetUserId(User)!;
                 _context.Add(car);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -65,7 +68,6 @@ namespace CarDealership.Controllers
             return View(car);
         }
 
-        // GET: Cars/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,9 +83,7 @@ namespace CarDealership.Controllers
             return View(car);
         }
 
-        // POST: Cars/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+     
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Brand,Model,Year,Description,Mileage,Engine,HorsePower,FuelType,Transmission,Type,SalePrice,RentPricePerDay,Status")] Car car)
@@ -115,8 +115,6 @@ namespace CarDealership.Controllers
             }
             return View(car);
         }
-
-        // GET: Cars/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,20 +132,25 @@ namespace CarDealership.Controllers
             return View(car);
         }
 
-        // POST: Cars/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var car = await _context.Cars.FindAsync(id);
-            if (car != null)
-            {
-                _context.Cars.Remove(car);
-            }
+            if (car == null) return NotFound();
 
+            var userId = _userManager.GetUserId(User);
+            var isOwner = car.OwnerId == userId;
+            var isAdmin = User.IsInRole("Admin");
+
+            if (!isOwner && !isAdmin)
+                return Forbid();
+
+            _context.Cars.Remove(car);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool CarExists(int id)
         {
