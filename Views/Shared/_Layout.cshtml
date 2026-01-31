@@ -1,70 +1,117 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CarLand</title>
-    <script type="importmap"></script>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CarDealership.styles.css" asp-append-version="true" />
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CarLand</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">    
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="mainNavbar">
+
+                    <!-- Ляво меню -->
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Sales" asp-action="Index">Каталог</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="RentalsCatalog" asp-action="Index">Наем</a>
-                        </li
-                        >
+                        </li>
+
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="AdminCars" asp-action="Index">Админ панел</a>
+                                <a class="nav-link text-dark" asp-controller="AdminCars" asp-action="Index">Админ панел</a>
                             </li>
                         }
-
-                        <ul class="navbar-nav ms-auto">
-                            @if (User.Identity?.IsAuthenticated ?? false)
-                            {
-                                <li class="nav-item">
-                                    <span class="nav-link">Здравей, @User.Identity!.Name</span>
-                                </li>
-
-                                <li class="nav-item">
-                                    <form class="d-inline" method="post" asp-area="Identity" asp-page="/Account/Logout">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-link nav-link">Изход</button>
-                                    </form>
-                                </li>
-                            }
-                            else
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Вход</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
-                                </li>
-                            }
-
-                     
-                        </ul>
                     </ul>
+
+                    <!-- Дясно меню -->
+                    <ul class="navbar-nav ms-auto">
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    Здравей, @User.Identity!.Name
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-area="Identity"
+                                           asp-page="/Account/Manage/Index">
+                                            Настройки
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Rentals"
+                                           asp-action="My">
+                                            Моите наеми
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Favorites"
+                                           asp-action="Index">
+                                            Любими
+                                        </a>
+                                    </li>
+
+                                    <li><hr class="dropdown-divider" /></li>
+
+                                    <li>
+                                        <form asp-area="Identity"
+                                              asp-page="/Account/Logout"
+                                              asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                                              method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">Изход</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Вход</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
+                            </li>
+                        }
+                    </ul>
+
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -76,9 +123,14 @@
             &copy; 2026 - CarLand - Проект от Мирослав Димитров, Христомир Христов и Добрин Панев
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- общите модали (купуване/контакт) -->
+    @await Html.PartialAsync("_ContactModal")
 </body>
 </html>

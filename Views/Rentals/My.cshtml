@@ -1,0 +1,69 @@
+﻿@model IEnumerable<CarDealership.Models.Rental>
+@{
+    ViewData["Title"] = "Моите наеми";
+}
+
+<h2 class="mb-3">Моите наеми</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="text-muted">Нямаш наеми.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Кола</th>
+                    <th>Период</th>
+                    <th>Дни</th>
+                    <th>Общо</th>
+                    <th>Статус</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@r.Car?.Brand @r.Car?.Model</div>
+                            <div class="text-muted small">@r.Car?.Year</div>
+                        </td>
+                        <td>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</td>
+                        <td>@r.Days</td>
+                        <td>@r.TotalPrice €</td>
+                        <td>@r.Status</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary"
+                               asp-controller="RentalsCatalog" asp-action="Details" asp-route-id="@r.CarId">
+                                Детайли
+                            </a>
+
+                            @if (r.Status == CarDealership.Models.Rental.RentalStatus.Active && r.StartDate.Date > DateTime.Today)
+                            {
+                                <form asp-action="Cancel" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@r.Id" />
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                        Отмени
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

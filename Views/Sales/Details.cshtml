@@ -8,7 +8,7 @@
 <div class="card shadow-sm">
     <div class="card-body">
         <h2 class="card-title">@Model.Brand @Model.Model (@Model.Year)</h2>
-        <p class="lead"><strong>Цена за продажба: @Model.SalePrice:0.## лв.</strong></p>
+        <p class="lead"><strong>Цена за продажба: @Model.SalePrice евро</strong></p>
 
         <dl class="row">
             <dt class="col-sm-3">Километраж</dt>
@@ -30,6 +30,11 @@
             <dd class="col-sm-9">@Model.Description</dd>
         </dl>
 
-        <button class="btn btn-success" disabled>Купи (следваща стъпка)</button>
+        <button type="button"
+                class="btn btn-success"
+                data-contact-title="Покупка / Оглед"
+                data-contact-message='За оглед и покупка на автомобил елате в нашия шоурум.'>
+            Купи
+        </button>
     </div>
 </div>
