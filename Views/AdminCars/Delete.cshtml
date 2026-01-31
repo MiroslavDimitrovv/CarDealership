@@ -1,0 +1,31 @@
+﻿@model CarDealership.Models.Car
+@{
+    ViewData["Title"] = "Изтриване";
+}
+
+<div class="container py-4">
+    <h1 class="h4 mb-3 text-danger">Изтриване на обява</h1>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex gap-3 align-items-start">
+                <img src="~/images/cars/@(Model.ImageFileName ?? "placeholder.jpg")"
+                     style="width:160px;height:110px;object-fit:cover;border-radius:10px" />
+
+                <div>
+                    <div class="fw-semibold">@Model.Brand @Model.Model (@Model.Year)</div>
+                    <div class="text-muted small">@Model.Engine • @Model.FuelType • @Model.Transmission</div>
+                    <div class="mt-2">
+                        Сигурен ли си, че искаш да изтриеш тази обява?
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="Delete" method="post" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <button class="btn btn-danger" type="submit">Да, изтрий</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Отказ</a>
+            </form>
+        </div>
+    </div>
+</div>

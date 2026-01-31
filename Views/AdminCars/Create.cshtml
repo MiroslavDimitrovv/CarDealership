@@ -1,0 +1,104 @@
+﻿@model CarDealership.Models.Car
+@{
+    ViewData["Title"] = "Нова обява";
+}
+
+<div class="container py-4">
+    <h1 class="h4 mb-3">Нова обява</h1>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="col-md-6">
+            <label class="form-label">Марка</label>
+            <input asp-for="Brand" class="form-control" />
+            <span asp-validation-for="Brand" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Модел</label>
+            <input asp-for="Model" class="form-control" />
+            <span asp-validation-for="Model" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Година</label>
+            <input asp-for="Year" class="form-control" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Километраж</label>
+            <input asp-for="Mileage" class="form-control" />
+            <span asp-validation-for="Mileage" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Конски сили</label>
+            <input asp-for="HorsePower" class="form-control" />
+            <span asp-validation-for="HorsePower" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Двигател</label>
+            <input asp-for="Engine" class="form-control" />
+            <span asp-validation-for="Engine" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Гориво</label>
+            <input asp-for="FuelType" class="form-control" />
+            <span asp-validation-for="FuelType" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Скоростна кутия</label>
+            <input asp-for="Transmission" class="form-control" />
+            <span asp-validation-for="Transmission" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Тип обява</label>
+            <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<CarDealership.Models.Car.ListingType>()"></select>
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Цена продажба (€)</label>
+            <input asp-for="SalePrice" class="form-control" />
+            <span asp-validation-for="SalePrice" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Цена наем/ден (€)</label>
+            <input asp-for="RentPricePerDay" class="form-control" />
+            <span asp-validation-for="RentPricePerDay" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Статус</label>
+            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<CarDealership.Models.Car.StatusType>()"></select>
+            <span asp-validation-for="Status" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Описание</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Снимка (jpg/png/webp)</label>
+            <input type="file" name="image" class="form-control" />
+        </div>
+
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Запази</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Назад</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

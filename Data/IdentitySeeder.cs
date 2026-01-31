@@ -23,6 +23,7 @@ namespace CarDealership.Data
             const string adminPassword = "Admin123!";
 
             var admin = await userManager.FindByEmailAsync(adminEmail);
+
             if (admin == null)
             {
                 admin = new ApplicationUser
@@ -32,11 +33,14 @@ namespace CarDealership.Data
                     EmailConfirmed = true
                 };
 
-                var result = await userManager.CreateAsync(admin, adminPassword);
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(admin, adminRole);
-                }
+                var create = await userManager.CreateAsync(admin, adminPassword);
+                if (!create.Succeeded)
+                    throw new Exception(string.Join("\n", create.Errors.Select(e => e.Description)));
+            }
+
+            if (!await userManager.IsInRoleAsync(admin, adminRole))
+            {
+                await userManager.AddToRoleAsync(admin, adminRole);
             }
         }
     }

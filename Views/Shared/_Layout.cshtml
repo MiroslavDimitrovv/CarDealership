@@ -25,7 +25,15 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="RentalsCatalog" asp-action="Index">Наем</a>
-                        </li>
+                        </li
+                        >
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="AdminCars" asp-action="Index">Админ панел</a>
+                            </li>
+                        }
+
                         <ul class="navbar-nav ms-auto">
                             @if (User.Identity?.IsAuthenticated ?? false)
                             {
@@ -49,17 +57,9 @@
                                     <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
                                 </li>
                             }
+
+                     
                         </ul>
-
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="AdminCars" asp-action="Index">Админ панел</a>
-                            </li>
-                        }
-
-
-
                     </ul>
                 </div>
             </div>

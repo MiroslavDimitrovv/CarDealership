@@ -44,6 +44,13 @@
                                        asp-controller="RentalsCatalog" asp-action="Details" asp-route-id="@c.Id">
                                         Детайли
                                     </a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           asp-controller="AdminCars" asp-action="Edit" asp-route-id="@c.Id">
+                                            Редактиране
+                                        </a>
+                                    }
                                 </div>
                             </div>
                         </div>
