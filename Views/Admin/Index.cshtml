@@ -1,0 +1,58 @@
+﻿@model IEnumerable<CarDealership.Models.Car>
+@{
+    ViewData["Title"] = "Админ панел - Коли";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 m-0">Админ панел - Коли</h1>
+        <a class="btn btn-primary" asp-action="Create">+ Нова обява</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Снимка</th>
+                    <th>Марка / Модел</th>
+                    <th>Тип</th>
+                    <th>Статус</th>
+                    <th>Цена</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td style="width:110px">
+                            <img src="~/images/cars/@(c.ImageFileName ?? "placeholder.jpg")"
+                                 style="width:96px;height:64px;object-fit:cover;border-radius:8px" />
+                        </td>
+                        <td>
+                            <div class="fw-semibold">@c.Brand @c.Model</div>
+                            <div class="text-muted small">@c.Year • @c.Mileage km • @c.FuelType</div>
+                        </td>
+                        <td>@c.Type</td>
+                        <td>@c.Status</td>
+                        <td>
+                            @if (c.Type == CarDealership.Models.Car.ListingType.ForSale)
+                            {
+                                <span>@(c.SalePrice?.ToString("0") ?? "-") €</span>
+                            }
+                            else
+                            {
+
+                                <span>@(c.RentPricePerDay?.ToString("0") ?? "-") € / ден</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@c.Id">Редакция</a>
+                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@c.Id">Изтрий</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

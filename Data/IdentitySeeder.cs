@@ -13,14 +13,12 @@ namespace CarDealership.Data
             const string adminRole = "Admin";
             const string userRole = "User";
 
-            // Roles
             if (!await roleManager.RoleExistsAsync(adminRole))
                 await roleManager.CreateAsync(new IdentityRole(adminRole));
 
             if (!await roleManager.RoleExistsAsync(userRole))
                 await roleManager.CreateAsync(new IdentityRole(userRole));
 
-            // Admin user
             const string adminEmail = "admin@local.test";
             const string adminPassword = "Admin123!";
 

@@ -42,7 +42,7 @@
     <tbody>
         @foreach (var item in Model)
         {
-            var canManage = isAdmin || (isLoggedIn && item.OwnerId == currentUserId);
+            var canManage = isAdmin;
 
             <tr>
                 <td>@Html.DisplayFor(modelItem => item.Brand)</td>

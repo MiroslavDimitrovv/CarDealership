@@ -24,9 +24,6 @@ namespace CarDealership.Models
         public int Id { get; set; }
 
         [Required]
-        public string OwnerId { get; set; } = string.Empty;
-
-        [Required]
         [Display(Name = "Марка")]
         public string Brand { get; set; } = string.Empty;
 
