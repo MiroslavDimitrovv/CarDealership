@@ -1,21 +1,46 @@
 ﻿@page
 @model LogoutModel
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "Изход";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
-            </form>
-        }
-        else
-        {
-            <p>You have successfully logged out of the application.</p>
-        }
-    }
-</header>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-7 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 text-center">
+
+                    <h1 class="h4 mb-3">@ViewData["Title"]</h1>
+
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <p class="text-muted mb-4">
+                            Сигурен ли си, че искаш да излезеш от профила си?
+                        </p>
+
+                        <form asp-area="Identity"
+                              asp-page="/Account/Logout"
+                              asp-route-returnUrl="@Url.Page("/", new { area = "" })"
+                              method="post">
+
+                            <button type="submit" class="btn btn-danger w-100">
+                                🚪 Изход
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mb-0">
+                            Успешно излезе от профила си.
+                        </div>
+
+                        <a asp-page="/Index" class="btn btn-outline-primary mt-3 w-100">
+                            ⬅️ Начална страница
+                        </a>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

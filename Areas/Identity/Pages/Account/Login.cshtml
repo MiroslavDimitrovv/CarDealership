@@ -10,27 +10,39 @@
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
                     <h1 class="h3 mb-2">Вход</h1>
-                    <p class="text-muted mb-4">Влез в профила си, за да запазваш коли и да следиш заявки.</p>
+                    <p class="text-muted mb-4">Влез в профила си, за да следиш активността си.</p>
 
-                    <form id="account" method="post">
+                    <form id="account" method="post" autocomplete="off">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Input.Email" class="form-label"></label>
-                            <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                            <label asp-for="Input.Email" class="form-label">Имейл</label>
+                            <input asp-for="Input.Email"
+                                   class="form-control"
+                                   autocomplete="off"
+                                   autocorrect="off"
+                                   autocapitalize="none"
+                                   spellcheck="false" />
                             <span asp-validation-for="Input.Email" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Input.Password" class="form-label"></label>
-                            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
+                            <label asp-for="Input.Password" class="form-label">Парола</label>
+                            <input asp-for="Input.Password"
+                                   class="form-control"
+                                   autocomplete="off"
+                                   autocorrect="off"
+                                   autocapitalize="none"
+                                   spellcheck="false" />
                             <span asp-validation-for="Input.Password" class="text-danger"></span>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" asp-for="Input.RememberMe" />
-                                <label class="form-check-label" asp-for="Input.RememberMe"></label>
+                                <input class="form-check-input"
+                                       asp-for="Input.RememberMe"
+                                       autocomplete="off" />
+                                <label class="form-check-label" asp-for="Input.RememberMe">Запомни ме</label>
                             </div>
                             <a id="forgot-password" asp-page="./ForgotPassword" class="small">Забравена парола?</a>
                         </div>
@@ -46,7 +58,7 @@
                                 Нямаш акаунт? Регистрация
                             </a>
                             <a asp-page="./ResendEmailConfirmation" class="text-decoration-none small">
-                                Потвърди email
+                                Потвърди имейл
                             </a>
                         </div>
                     </form>
@@ -55,13 +67,13 @@
                     {
                         <hr class="my-4" />
                         <p class="text-muted mb-2">Вход с друг акаунт</p>
-                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" autocomplete="off">
                             <div class="d-grid gap-2">
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
                                     <button type="submit" class="btn btn-outline-secondary"
                                             name="provider" value="@provider.Name"
-                                            title="Log in using your @provider.DisplayName account">
+                                            title="Вход с @provider.DisplayName">
                                         @provider.DisplayName
                                     </button>
                                 }
