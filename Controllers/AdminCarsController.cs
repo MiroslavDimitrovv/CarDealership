@@ -18,9 +18,42 @@ namespace CarDealership.Controllers
             _env = env;
         }
 
-        public async Task<IActionResult> Index()
+        // ✅ Index с филтри: q (търсене), type (ForSale/ForRent), status (Available/Rented/Sold/Unavailable)
+        public async Task<IActionResult> Index(string? q, string? type, string? status)
         {
-            var cars = await _db.Cars.AsNoTracking()
+            var carsQuery = _db.Cars.AsNoTracking().AsQueryable();
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                q = q.Trim();
+
+                carsQuery = carsQuery.Where(c =>
+                    (c.Brand ?? "").Contains(q) ||
+                    (c.Model ?? "").Contains(q) ||
+                    (c.FuelType ?? "").Contains(q) ||
+                    (c.Engine ?? "").Contains(q) ||
+                    (c.Transmission ?? "").Contains(q) ||
+                    c.Year.ToString().Contains(q) ||
+                    c.Mileage.ToString().Contains(q)
+                );
+            }
+
+            // Filter by type (enum parse)
+            if (!string.IsNullOrWhiteSpace(type) &&
+                Enum.TryParse<Car.ListingType>(type, ignoreCase: true, out var listingType))
+            {
+                carsQuery = carsQuery.Where(c => c.Type == listingType);
+            }
+
+            // Filter by status (enum parse)
+            if (!string.IsNullOrWhiteSpace(status) &&
+                Enum.TryParse<Car.StatusType>(status, ignoreCase: true, out var st))
+            {
+                carsQuery = carsQuery.Where(c => c.Status == st);
+            }
+
+            var cars = await carsQuery
                 .OrderByDescending(c => c.Id)
                 .ToListAsync();
 

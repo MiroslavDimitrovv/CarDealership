@@ -22,12 +22,10 @@ namespace CarDealership.Controllers
         {
             var today = DateTime.Today;
 
-            // базовите коли за наем + "налична" по статус
             var baseQuery = _db.Cars.AsNoTracking()
                 .Where(c => c.Status == Car.StatusType.Available &&
                             c.Type == Car.ListingType.ForRent);
 
-            // ✅ махаме тези, които имат active rental, който покрива ДНЕС
             baseQuery = baseQuery.Where(c =>
                 !_db.Rentals.Any(r =>
                     r.CarId == c.Id &&
@@ -35,7 +33,6 @@ namespace CarDealership.Controllers
                     r.StartDate <= today &&
                     r.EndDate >= today));
 
-            // dropdown-ите за филтри (само по наличните в baseQuery)
             filter.Brands = await baseQuery.Select(c => c.Brand).Distinct().OrderBy(x => x).ToListAsync();
             filter.FuelTypes = await baseQuery.Select(c => c.FuelType).Distinct().OrderBy(x => x).ToListAsync();
             filter.Transmissions = await baseQuery.Select(c => c.Transmission).Distinct().OrderBy(x => x).ToListAsync();
@@ -98,7 +95,6 @@ namespace CarDealership.Controllers
 
             if (car == null) return NotFound();
 
-            // ✅ заети периоди (Active rentals) – ще ги ползваш във view-то
             var booked = await _db.Rentals.AsNoTracking()
                 .Where(r => r.CarId == id && r.Status == Rental.RentalStatus.Active)
                 .Select(r => new { start = r.StartDate.Date, end = r.EndDate.Date })
@@ -113,7 +109,7 @@ namespace CarDealership.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Rent(int carId, DateTime startDate, DateTime endDate)
+        public async Task<IActionResult> Rent(int carId, DateTime startDate, DateTime endDate, string paymentMethod)
         {
             var car = await _db.Cars.FirstOrDefaultAsync(c => c.Id == carId);
 
@@ -159,7 +155,6 @@ namespace CarDealership.Controllers
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
-            // ✅ overlap check
             var overlaps = await _db.Rentals.AnyAsync(r =>
                 r.CarId == carId &&
                 r.Status == Rental.RentalStatus.Active &&
@@ -175,6 +170,9 @@ namespace CarDealership.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userId)) return Challenge();
 
+            if (!Enum.TryParse<Rental.PaymentMethod>(paymentMethod, ignoreCase: true, out var pm))
+                pm = Rental.PaymentMethod.CashOnPickup;
+
             var rental = new Rental
             {
                 CarId = car.Id,
@@ -184,13 +182,18 @@ namespace CarDealership.Controllers
                 Days = days,
                 PricePerDay = car.RentPricePerDay.Value,
                 TotalPrice = car.RentPricePerDay.Value * days,
-                Status = Rental.RentalStatus.Active
+                Status = Rental.RentalStatus.Active,
+                PayMethod = pm
             };
 
             _db.Rentals.Add(rental);
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = $"Успешно заяви наем за {days} дни. Обща цена: {rental.TotalPrice} €.";
+            var payText = pm == Rental.PaymentMethod.CardPrepay
+                ? "предварително с карта"
+                : "в брой при вземане";
+
+            TempData["Success"] = $"Успешно заяви наем за {days} дни. Обща цена: {rental.TotalPrice} €. Плащане: {payText}.";
             return RedirectToAction(nameof(Details), new { id = car.Id });
         }
     }

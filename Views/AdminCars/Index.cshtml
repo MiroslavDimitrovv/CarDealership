@@ -1,13 +1,81 @@
 ﻿@model IEnumerable<CarDealership.Models.Car>
 @{
     ViewData["Title"] = "Админ панел - Коли";
+
+    // стойности от query string за филтри
+    var q = Context.Request.Query["q"].ToString();
+    var type = Context.Request.Query["type"].ToString();
+    var status = Context.Request.Query["status"].ToString();
 }
 
 <div class="container py-4">
+
+    <!-- TOP ADMIN MENU -->
+    <div class="mb-3">
+        <ul class="nav nav-pills flex-wrap gap-2">
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="AdminRentals" asp-action="Latest">Последни наеми</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="AdminRentals" asp-action="Cancelled">Отказани наеми</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="AdminUsers" asp-action="Index">Списък потребители</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-controller="AdminRentals" asp-action="Occupancy">Автомобили - заетост</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" asp-controller="AdminCars" asp-action="Index">Автомобили</a>
+            </li>
+        </ul>
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h4 m-0">Админ панел - Коли</h1>
         <a class="btn btn-primary" asp-action="Create">+ Нова обява</a>
     </div>
+
+    <!-- FILTER BAR -->
+    <form method="get" class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Търсене</label>
+                    <input name="q" value="@q" class="form-control"
+                           placeholder="Марка, модел, година, гориво..." />
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Тип</label>
+                    <select name="type" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(type))">Всички</option>
+                        <option value="ForSale" selected="@(type == "ForSale")">Продажба</option>
+                        <option value="ForRent" selected="@(type == "ForRent")">Наем</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label">Статус</label>
+                    <select name="status" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(status))">Всички</option>
+                        <option value="Available" selected="@(status == "Available")">Available</option>
+                        <option value="Rented" selected="@(status == "Rented")">Rented</option>
+                        <option value="Sold" selected="@(status == "Sold")">Sold</option>
+                        <option value="Unavailable" selected="@(status == "Unavailable")">Unavailable</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-outline-primary" type="submit">Филтрирай</button>
+                    <a class="btn btn-outline-secondary"
+                       asp-controller="AdminCars" asp-action="Index">
+                        Изчисти
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
 
     <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -42,7 +110,6 @@
                             }
                             else
                             {
-
                                 <span>@(c.RentPricePerDay?.ToString("0") ?? "-") € / ден</span>
                             }
                         </td>

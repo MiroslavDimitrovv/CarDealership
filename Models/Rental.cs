@@ -41,9 +41,18 @@ namespace CarDealership.Models
         [Display(Name = "Статус")]
         public RentalStatus Status { get; set; } = RentalStatus.Active;
 
+        public enum PaymentMethod
+        {
+            CashOnPickup = 1,   
+            CardPrepay = 2     
+        }
+
+        [Display(Name = "Метод на плащане")]
+        public PaymentMethod PayMethod { get; set; } = PaymentMethod.CashOnPickup;
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (EndDate < StartDate) 
+            if (EndDate < StartDate)
             {
                 yield return new ValidationResult(
                     "Крайната дата не може да е преди началната.",

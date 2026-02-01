@@ -28,9 +28,13 @@ namespace CarDealership.Data
                 .Property(c => c.RentPricePerDay)
                 .HasPrecision(18, 2);
 
-            modelBuilder.Entity<Rental>()
-                .Property(r => r.TotalPrice)
-                .HasPrecision(18, 2);
+           modelBuilder.Entity<Rental>()
+    .Property(r => r.TotalPrice)
+    .HasPrecision(18, 2);
+
+modelBuilder.Entity<Rental>()
+    .Property(r => r.PricePerDay)
+    .HasPrecision(18, 2);
 
             modelBuilder.Entity<Sale>()
                 .Property(s => s.FinalPrice)

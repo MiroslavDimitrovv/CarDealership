@@ -1,4 +1,6 @@
 ﻿@model IEnumerable<CarDealership.Models.Rental>
+@using CarDealership.Models
+
 @{
     ViewData["Title"] = "Моите наеми";
 }
@@ -28,6 +30,7 @@ else
                     <th>Период</th>
                     <th>Дни</th>
                     <th>Общо</th>
+                    <th>Плащане</th>
                     <th>Статус</th>
                     <th></th>
                 </tr>
@@ -35,30 +38,119 @@ else
             <tbody>
                 @foreach (var r in Model)
                 {
+                    var isPaid = r.PayMethod == Rental.PaymentMethod.CardPrepay;
+
                     <tr>
                         <td>
                             <div class="fw-semibold">@r.Car?.Brand @r.Car?.Model</div>
                             <div class="text-muted small">@r.Car?.Year</div>
                         </td>
+
                         <td>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</td>
                         <td>@r.Days</td>
                         <td>@r.TotalPrice €</td>
-                        <td>@r.Status</td>
+
+                        <!-- ПЛАЩАНЕ -->
+                        <td>
+                            @if (r.PayMethod == Rental.PaymentMethod.CashOnPickup)
+                            {
+                                <span class="badge bg-secondary">В брой</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Карта</span>
+                            }
+
+                            <div class="small text-muted">
+                                @(isPaid ? "Платено" : "Неплатено")
+                            </div>
+                        </td>
+
+                        <td>
+                            @if (r.Status == Rental.RentalStatus.Active)
+                            {
+                                <span class="badge bg-success">Активен</span>
+                            }
+                            else if (r.Status == Rental.RentalStatus.Cancelled)
+                            {
+                                <span class="badge bg-danger">Отменен</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@r.Status</span>
+                            }
+                        </td>
+
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-secondary"
-                               asp-controller="RentalsCatalog" asp-action="Details" asp-route-id="@r.CarId">
+                               asp-controller="RentalsCatalog"
+                               asp-action="Details"
+                               asp-route-id="@r.CarId">
                                 Детайли
                             </a>
 
-                            @if (r.Status == CarDealership.Models.Rental.RentalStatus.Active && r.StartDate.Date > DateTime.Today)
+                            @if (r.Status == Rental.RentalStatus.Active && r.StartDate.Date > DateTime.Today)
                             {
-                                <form asp-action="Cancel" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@r.Id" />
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                                if (isPaid)
+                                {
+                                    <!-- CARD → MODAL -->
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#cancelModal-@r.Id">
                                         Отмени
                                     </button>
-                                </form>
+
+                                    <!-- MODAL -->
+                                    <div class="modal fade" id="cancelModal-@r.Id" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Отказ на наем</h5>
+                                                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <p>
+                                                        Сигурни ли сте, че искате да отмените наема на
+                                                        <strong>@r.Car?.Brand @r.Car?.Model</strong>?
+                                                    </p>
+
+                                                    <div class="alert alert-warning small mb-0 text-center">
+                                                        Наемът е платен с карта.
+                                                        <br>
+                                                        Сумата от <strong>@r.TotalPrice €</strong> ще бъде възстановена по картата.
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button class="btn btn-outline-secondary"
+                                                            data-bs-dismiss="modal">
+                                                        Назад
+                                                    </button>
+
+                                                    <form asp-action="Cancel" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@r.Id" />
+                                                        <button class="btn btn-danger" type="submit">
+                                                            Потвърди отказ
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- CASH → DIRECT -->
+                                    <form asp-action="Cancel" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@r.Id" />
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            Отмени
+                                        </button>
+                                    </form>
+                                }
                             }
                         </td>
                     </tr>

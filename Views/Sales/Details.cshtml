@@ -1,40 +1,41 @@
-﻿@model CarDealership.Models.Car
-@{
-    ViewData["Title"] = "Детайли";
-}
-
-<a asp-action="Index" class="btn btn-link mb-3">← Назад</a>
-
-<div class="card shadow-sm">
+﻿<div class="card shadow-sm">
     <div class="card-body">
-        <h2 class="card-title">@Model.Brand @Model.Model (@Model.Year)</h2>
-        <p class="lead"><strong>Цена за продажба: @Model.SalePrice евро</strong></p>
+        <div class="row g-4">
+            <div class="col-md-7">
+                <img src="~/images/cars/@(Model.ImageFileName ?? "placeholder.jpg")"
+                     class="img-fluid rounded shadow-sm"
+                     style="max-height:420px; width:100%; object-fit:cover;"
+                     alt="@Model.Brand @Model.Model" />
+            </div>
 
-        <dl class="row">
-            <dt class="col-sm-3">Километраж</dt>
-            <dd class="col-sm-9">@Model.Mileage</dd>
+            <div class="col-md-5">
+                <h2>@Model.Brand @Model.Model (@Model.Year)</h2>
 
-            <dt class="col-sm-3">Двигател</dt>
-            <dd class="col-sm-9">@Model.Engine</dd>
+                <div class="h4 text-success mb-2">
+                    @((Model.SalePrice ?? 0).ToString("0")) €
+                </div>
 
-            <dt class="col-sm-3">Конски сили</dt>
-            <dd class="col-sm-9">@Model.HorsePower</dd>
+                <div class="text-muted mb-3">
+                    @Model.Engine • @Model.HorsePower hp • @Model.Transmission
+                </div>
 
-            <dt class="col-sm-3">Гориво</dt>
-            <dd class="col-sm-9">@Model.FuelType</dd>
+                <dl class="row small">
+                    <dt class="col-5">Километраж</dt>
+                    <dd class="col-7">@Model.Mileage km</dd>
 
-            <dt class="col-sm-3">Скорости</dt>
-            <dd class="col-sm-9">@Model.Transmission</dd>
+                    <dt class="col-5">Гориво</dt>
+                    <dd class="col-7">@Model.FuelType</dd>
 
-            <dt class="col-sm-3">Описание</dt>
-            <dd class="col-sm-9">@Model.Description</dd>
-        </dl>
+                    <dt class="col-5">Описание</dt>
+                    <dd class="col-7">@Model.Description</dd>
+                </dl>
 
-        <button type="button"
-                class="btn btn-success"
-                data-contact-title="Покупка / Оглед"
-                data-contact-message='За оглед и покупка на автомобил елате в нашия шоурум.'>
-            Купи
-        </button>
+                <button class="btn btn-success w-100"
+                        data-bs-toggle="modal"
+                        data-bs-target="#contactModal">
+                    Купи
+                </button>
+            </div>
+        </div>
     </div>
 </div>
