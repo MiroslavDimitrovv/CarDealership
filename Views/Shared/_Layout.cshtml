@@ -27,7 +27,6 @@
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="mainNavbar">
 
-                    <!-- Ляво меню -->
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Sales" asp-action="Index">Каталог</a>
@@ -35,6 +34,16 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="RentalsCatalog" asp-action="Index">Наем</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                               asp-area=""
+                               asp-controller="CarValuation"
+                               asp-action="Index">
+                                Оценка на автомобил
+                            </a>
+                        </li>
+
+
 
                         @if (User.IsInRole("Admin"))
                         {
@@ -44,7 +53,6 @@
                         }
                     </ul>
 
-                    <!-- Дясно меню -->
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {

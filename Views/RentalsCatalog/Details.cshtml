@@ -29,7 +29,7 @@
                 <h2>@Model.Brand @Model.Model (@Model.Year)</h2>
 
                 <div class="h5 text-primary mb-3">
-                    @((Model.RentPricePerDay ?? 0).ToString("0")) € / ден
+                    @((Model.RentPricePerDay ?? 0).ToString("0.00")) € / ден
                 </div>
 
                 <div class="text-muted mb-3">
@@ -46,9 +46,7 @@
 
                 @if (!(User.Identity?.IsAuthenticated ?? false))
                 {
-                    <div class="alert alert-warning">
-                        Трябва да си влязъл в профила си.
-                    </div>
+                    <div class="alert alert-warning">Трябва да си влязъл в профила си.</div>
                 }
                 else
                 {
@@ -87,13 +85,21 @@
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5>Потвърждение</h5>
+                                    <h5 class="modal-title">Потвърждение</h5>
                                     <button class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <ul class="small">
+                                    <ul class="small mb-0">
                                         <li>От: <strong id="confirmStart">-</strong></li>
                                         <li>До: <strong id="confirmEnd">-</strong></li>
+                                        <li class="mt-2">
+                                            Цена / ден:
+                                            <strong>@((Model.RentPricePerDay ?? 0).ToString("0.00")) €</strong>
+                                        </li>
+                                        <li>
+                                            Общо:
+                                            <strong id="confirmTotal">-</strong>
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="modal-footer">
@@ -109,7 +115,7 @@
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5>Плащане</h5>
+                                    <h5 class="modal-title">Плащане</h5>
                                     <button class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
 
@@ -126,7 +132,6 @@
                                         <label class="form-check-label">Плащане с карта</label>
                                     </div>
 
-                                    <!-- CARD TEST -->
                                     <div id="cardTestBox" class="border rounded p-3 mt-3 d-none">
                                         <div id="cardPayError" class="alert alert-danger d-none"></div>
                                         <div class="d-flex gap-2">
@@ -138,6 +143,16 @@
                                             </button>
                                         </div>
                                     </div>
+
+                                    <hr />
+                                    <ul class="small mb-0">
+                                        <li>Период: <strong id="payPeriod">-</strong></li>
+                                        <li>
+                                            Цена / ден:
+                                            <strong>@((Model.RentPricePerDay ?? 0).ToString("0.00")) €</strong>
+                                        </li>
+                                        <li>Общо: <strong id="payTotal">-</strong></li>
+                                    </ul>
                                 </div>
 
                                 <div class="modal-footer">
@@ -151,58 +166,91 @@
                     </div>
 
                     <script>
-                        const startInput = document.getElementById("startDate");
-                        const endInput = document.getElementById("endDate");
-                        const errorBox = document.getElementById("rentClientError");
+                        const pricePerDay = @((Model.RentPricePerDay ?? 0)
+                                                    .ToString(System.Globalization.CultureInfo.InvariantCulture));
 
-                        const confirmStart = document.getElementById("confirmStart");
-                        const confirmEnd = document.getElementById("confirmEnd");
+                    const startInput = document.getElementById("startDate");
+                    const endInput = document.getElementById("endDate");
+                    const errorBox = document.getElementById("rentClientError");
 
-                        const hiddenPay = document.getElementById("paymentMethod");
-                        const cardTestBox = document.getElementById("cardTestBox");
-                        const cashBtn = document.getElementById("cashSubmitBtn");
-                        const cardError = document.getElementById("cardPayError");
+                        function parseDate(v) {
+                            const d = new Date(v + "T00:00:00");
+                            return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                        }
+
+                        function calcDays(s, e) {
+                            return Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
+                        }
 
                         document.getElementById("openRentConfirm").onclick = () => {
+                            errorBox.classList.add("d-none");
+
                             if (!startInput.value || !endInput.value) {
                                 errorBox.textContent = "Избери дати.";
                                 errorBox.classList.remove("d-none");
                                 return;
                             }
-                            confirmStart.textContent = startInput.value;
-                            confirmEnd.textContent = endInput.value;
+
+                            const s = parseDate(startInput.value);
+                            const e = parseDate(endInput.value);
+
+                            if (e < s) {
+                                errorBox.textContent = "Крайната дата не може да е преди началната.";
+                                errorBox.classList.remove("d-none");
+                                return;
+                            }
+
+                            const days = calcDays(s, e);
+                            const total = days * pricePerDay;
+
+                            document.getElementById("confirmStart").textContent = startInput.value;
+                            document.getElementById("confirmEnd").textContent = endInput.value;
+                            document.getElementById("confirmTotal").textContent = total.toFixed(2) + " €";
+
                             new bootstrap.Modal(rentConfirmModal).show();
                         };
 
                         document.getElementById("goToPayment").onclick = () => {
+                            const s = parseDate(startInput.value);
+                            const e = parseDate(endInput.value);
+
+                            const days = calcDays(s, e);
+                            const total = days * pricePerDay;
+
+                            document.getElementById("payPeriod").textContent =
+                                `${startInput.value} – ${endInput.value} (${days} дни)`;
+                            document.getElementById("payTotal").textContent =
+                                total.toFixed(2) + " €";
+
                             bootstrap.Modal.getInstance(rentConfirmModal).hide();
                             new bootstrap.Modal(paymentModal).show();
                         };
 
                         document.querySelectorAll('input[name="payRadio"]').forEach(r => {
                             r.onchange = () => {
-                                hiddenPay.value = r.value;
+                                document.getElementById("paymentMethod").value = r.value;
+
                                 if (r.value === "CardPrepay") {
                                     cardTestBox.classList.remove("d-none");
-                                    cashBtn.classList.add("d-none");
+                                    cashSubmitBtn.classList.add("d-none");
                                 } else {
                                     cardTestBox.classList.add("d-none");
-                                    cashBtn.classList.remove("d-none");
+                                    cashSubmitBtn.classList.remove("d-none");
                                 }
                             };
                         });
 
                         btnCardSuccess.onclick = () => {
-                            hiddenPay.value = "CardPrepay";
+                            document.getElementById("paymentMethod").value = "CardPrepay";
                             rentForm.submit();
                         };
 
                         btnCardFail.onclick = () => {
-                            cardError.textContent = "Плащането е неуспешно.";
-                            cardError.classList.remove("d-none");
+                            document.getElementById("cardPayError").textContent = "Плащането е неуспешно.";
+                            document.getElementById("cardPayError").classList.remove("d-none");
                         };
                     </script>
-                }
+                                }
             </div>
         </div>
     </div>

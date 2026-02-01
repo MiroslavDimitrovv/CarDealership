@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 
 namespace CarDealership.Models
 {
@@ -33,7 +31,6 @@ namespace CarDealership.Models
 
         [Display(Name = "Снимка (файл)")]
         public string? ImageFileName { get; set; }
-
 
         [Range(1920, 2100)]
         [Display(Name = "Година")]
@@ -75,9 +72,12 @@ namespace CarDealership.Models
         [Display(Name = "Цена за наем (на ден)")]
         public decimal? RentPricePerDay { get; set; }
 
+        public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
+
         [Required]
         [Display(Name = "Статус")]
         public StatusType Status { get; set; } = StatusType.Available;
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Type == ListingType.ForSale)

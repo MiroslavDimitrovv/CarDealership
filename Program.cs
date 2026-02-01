@@ -53,6 +53,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "carvaluation",
+    pattern: "CarValuation/{action=Index}/{id?}",
+    defaults: new { controller = "CarValuation" });
+
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 

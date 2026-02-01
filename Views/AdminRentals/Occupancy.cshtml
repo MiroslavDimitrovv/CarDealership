@@ -1,0 +1,154 @@
+﻿@model IEnumerable<CarDealership.Models.Car>
+
+@{
+    ViewData["Title"] = "Автомобили – Заетост";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 m-0">Автомобили – Заетост</h1>
+
+        <a class="btn btn-outline-secondary"
+           asp-controller="AdminCars"
+           asp-action="Index">
+            ← Назад към Админ Панела
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Автомобил</th>
+                    <th>Статус</th>
+                    <th>Активни наеми</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var car in Model)
+                {
+                    var activeRentals = car.Rentals?
+                    .Where(r => r.Status == CarDealership.Models.Rental.RentalStatus.Active)
+                    .OrderBy(r => r.StartDate)
+                    .ToList()
+                    ?? new List<CarDealership.Models.Rental>();
+
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">@car.Brand @car.Model</div>
+                            <div class="text-muted small">@car.Year • @car.Engine</div>
+                        </td>
+
+                        <td style="width:120px">
+                            @if (activeRentals.Any())
+                            {
+                                <span class="badge bg-danger">Зает</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Свободен</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (activeRentals.Any())
+                            {
+                                <ul class="mb-0 small">
+                                    @foreach (var r in activeRentals)
+                                    {
+                                        <li class="mb-2">
+                                            <div>
+                                                📅
+                                                <strong>
+                                                    @r.StartDate.ToString("dd.MM.yyyy")
+                                                    –
+                                                    @r.EndDate.ToString("dd.MM.yyyy")
+                                                </strong>
+                                            </div>
+
+                                            <div class="text-muted">
+                                                👤 @r.Client?.FullName
+                                            </div>
+
+                                            <div class="text-muted">
+                                                📞 @r.Client?.PhoneNumber
+                                            </div>
+
+                                            <div class="text-muted small">
+                                                ✉️ @r.Client?.Email
+                                            </div>
+                                        </li>
+                                        <form method="post"
+                                              asp-controller="AdminRentals"
+                                              asp-action="Release"
+                                              class="mt-2">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="rentalId" value="@r.Id" />
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#releaseModal-@r.Id">
+                                                Освободи
+                                            </button>
+
+                                            <div class="modal fade" id="releaseModal-@r.Id" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Освобождаване на автомобил предварително</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+
+                                                        <div class="modal-body">
+                                                            <p class="mb-2">
+                                                                Сигурни ли сте, че искате да освободите автомобила:
+                                                                <strong>@car.Brand @car.Model</strong>?
+                                                            </p>
+
+                                                            <ul class="small mb-0">
+                                                                <li>
+                                                                    Период:
+                                                                    <strong>
+                                                                        @r.StartDate.ToString("dd.MM.yyyy")
+                                                                        –
+                                                                        @r.EndDate.ToString("dd.MM.yyyy")
+                                                                    </strong>
+                                                                </li>
+                                                                <li>Клиент: <strong>@r.Client?.FullName</strong></li>
+                                                                <li>Телефон: <strong>@r.Client?.PhoneNumber</strong></li>
+                                                                <li>Имейл: <strong>@r.Client?.Email</strong></li>
+                                                            </ul>
+                                                        </div>
+
+                                                        <div class="modal-footer">
+                                                            <button type="button"
+                                                                    class="btn btn-outline-secondary"
+                                                                    data-bs-dismiss="modal">
+                                                                Отказ
+                                                            </button>
+
+                                                            <button type="submit" class="btn btn-danger">
+                                                                Да, освободи
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Няма активни наеми</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

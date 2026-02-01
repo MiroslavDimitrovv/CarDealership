@@ -24,7 +24,7 @@ namespace CarDealership.Models
         [Required]
         [Display(Name = "Имейл")]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty;   
+        public string Email { get; set; } = string.Empty;
 
         [Display(Name = "ЕГН")]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "ЕГН трябва да е точно 10 цифри.")]
@@ -36,6 +36,10 @@ namespace CarDealership.Models
 
         [Display(Name = "Дата на регистрация")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        public string UserId { get; set; } = string.Empty;
+        public ApplicationUser? User { get; set; }
 
         [Display(Name = "Клиент")]
         public string FullName => $"{FirstName} {LastName}";

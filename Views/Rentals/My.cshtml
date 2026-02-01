@@ -50,7 +50,6 @@ else
                         <td>@r.Days</td>
                         <td>@r.TotalPrice €</td>
 
-                        <!-- ПЛАЩАНЕ -->
                         <td>
                             @if (r.PayMethod == Rental.PaymentMethod.CashOnPickup)
                             {
@@ -93,14 +92,12 @@ else
                             {
                                 if (isPaid)
                                 {
-                                    <!-- CARD → MODAL -->
                                     <button class="btn btn-sm btn-outline-danger"
                                             data-bs-toggle="modal"
                                             data-bs-target="#cancelModal-@r.Id">
                                         Отмени
                                     </button>
 
-                                    <!-- MODAL -->
                                     <div class="modal fade" id="cancelModal-@r.Id" tabindex="-1">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
@@ -142,7 +139,6 @@ else
                                 }
                                 else
                                 {
-                                    <!-- CASH → DIRECT -->
                                     <form asp-action="Cancel" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@r.Id" />

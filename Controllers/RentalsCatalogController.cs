@@ -23,15 +23,13 @@ namespace CarDealership.Controllers
             var today = DateTime.Today;
 
             var baseQuery = _db.Cars.AsNoTracking()
-                .Where(c => c.Status == Car.StatusType.Available &&
-                            c.Type == Car.ListingType.ForRent);
-
-            baseQuery = baseQuery.Where(c =>
-                !_db.Rentals.Any(r =>
-                    r.CarId == c.Id &&
-                    r.Status == Rental.RentalStatus.Active &&
-                    r.StartDate <= today &&
-                    r.EndDate >= today));
+                .Where(c => c.Type == Car.ListingType.ForRent &&
+                            c.Status == Car.StatusType.Available &&
+                            !_db.Rentals.Any(r =>
+                                r.CarId == c.Id &&
+                                r.Status == Rental.RentalStatus.Active &&
+                                r.StartDate <= today &&
+                                r.EndDate >= today));
 
             filter.Brands = await baseQuery.Select(c => c.Brand).Distinct().OrderBy(x => x).ToListAsync();
             filter.FuelTypes = await baseQuery.Select(c => c.FuelType).Distinct().OrderBy(x => x).ToListAsync();
@@ -74,18 +72,21 @@ namespace CarDealership.Controllers
                 q = q.Where(c => c.HorsePower <= filter.HorsePowerTo.Value);
 
             if (filter.PriceFrom.HasValue)
-                q = q.Where(c => c.RentPricePerDay != null && c.RentPricePerDay >= filter.PriceFrom.Value);
+                q = q.Where(c => c.RentPricePerDay >= filter.PriceFrom.Value);
 
             if (filter.PriceTo.HasValue)
-                q = q.Where(c => c.RentPricePerDay != null && c.RentPricePerDay <= filter.PriceTo.Value);
+                q = q.Where(c => c.RentPricePerDay <= filter.PriceTo.Value);
 
             var cars = await q
                 .OrderByDescending(c => c.Year)
                 .ThenBy(c => c.Brand)
                 .ToListAsync();
 
-            var pageVm = new RentalsIndexVm { Filter = filter, Cars = cars };
-            return View(pageVm);
+            return View(new RentalsIndexVm
+            {
+                Filter = filter,
+                Cars = cars
+            });
         }
 
         public async Task<IActionResult> Details(int id)
@@ -93,15 +94,14 @@ namespace CarDealership.Controllers
             var car = await _db.Cars.AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id && c.Type == Car.ListingType.ForRent);
 
-            if (car == null) return NotFound();
+            if (car == null)
+                return NotFound();
 
-            var booked = await _db.Rentals.AsNoTracking()
+            ViewBag.Booked = await _db.Rentals.AsNoTracking()
                 .Where(r => r.CarId == id && r.Status == Rental.RentalStatus.Active)
                 .Select(r => new { start = r.StartDate.Date, end = r.EndDate.Date })
                 .OrderBy(r => r.start)
                 .ToListAsync();
-
-            ViewBag.Booked = booked;
 
             return View(car);
         }
@@ -112,18 +112,12 @@ namespace CarDealership.Controllers
         public async Task<IActionResult> Rent(int carId, DateTime startDate, DateTime endDate, string paymentMethod)
         {
             var car = await _db.Cars.FirstOrDefaultAsync(c => c.Id == carId);
+            if (car == null)
+                return NotFound();
 
-            if (car == null) return NotFound();
-
-            if (car.Type != Car.ListingType.ForRent)
+            if (car.Type != Car.ListingType.ForRent || car.Status != Car.StatusType.Available)
             {
-                TempData["Error"] = "Тази кола не е предназначена за наем.";
-                return RedirectToAction(nameof(Details), new { id = carId });
-            }
-
-            if (car.Status != Car.StatusType.Available)
-            {
-                TempData["Error"] = "Автомобилът не е наличен за наем в момента.";
+                TempData["Error"] = "Автомобилът не е наличен за наем.";
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
@@ -136,15 +130,9 @@ namespace CarDealership.Controllers
             var start = startDate.Date;
             var end = endDate.Date;
 
-            if (start < DateTime.Today)
+            if (start < DateTime.Today || end < start)
             {
-                TempData["Error"] = "Началната дата не може да е в миналото.";
-                return RedirectToAction(nameof(Details), new { id = carId });
-            }
-
-            if (end < start)
-            {
-                TempData["Error"] = "Крайната дата не може да е преди началната.";
+                TempData["Error"] = "Невалиден период за наем.";
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
@@ -155,28 +143,37 @@ namespace CarDealership.Controllers
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
-            var overlaps = await _db.Rentals.AnyAsync(r =>
+            var overlap = await _db.Rentals.AnyAsync(r =>
                 r.CarId == carId &&
                 r.Status == Rental.RentalStatus.Active &&
-                start <= r.EndDate.Date &&
-                end >= r.StartDate.Date);
+                start <= r.EndDate &&
+                end >= r.StartDate);
 
-            if (overlaps)
+            if (overlap)
             {
-                TempData["Error"] = "Автомобилът е зает за избрания период. Моля избери други дати.";
+                TempData["Error"] = "Автомобилът е зает за избрания период.";
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userId)) return Challenge();
+            if (string.IsNullOrWhiteSpace(userId))
+                return Challenge();
 
-            if (!Enum.TryParse<Rental.PaymentMethod>(paymentMethod, ignoreCase: true, out var pm))
+            var client = await _db.Clients.FirstOrDefaultAsync(c => c.UserId == userId);
+            if (client == null || string.IsNullOrWhiteSpace(client.PhoneNumber))
+            {
+                TempData["Error"] = "Телефонният номер е задължителен за наем.";
+                return RedirectToAction(nameof(Details), new { id = carId });
+            }
+
+            if (!Enum.TryParse<Rental.PaymentMethod>(paymentMethod, true, out var pm))
                 pm = Rental.PaymentMethod.CashOnPickup;
 
             var rental = new Rental
             {
                 CarId = car.Id,
                 UserId = userId,
+                ClientId = client.Id,
                 StartDate = start,
                 EndDate = end,
                 Days = days,
@@ -186,14 +183,14 @@ namespace CarDealership.Controllers
                 PayMethod = pm
             };
 
+
             _db.Rentals.Add(rental);
             await _db.SaveChangesAsync();
 
-            var payText = pm == Rental.PaymentMethod.CardPrepay
-                ? "предварително с карта"
-                : "в брой при вземане";
+            TempData["Success"] =
+                $"Наемът е създаден успешно. Общо: {rental.TotalPrice} €. " +
+                $"Плащане: {(pm == Rental.PaymentMethod.CardPrepay ? "с карта" : "в брой")}.";
 
-            TempData["Success"] = $"Успешно заяви наем за {days} дни. Обща цена: {rental.TotalPrice} €. Плащане: {payText}.";
             return RedirectToAction(nameof(Details), new { id = car.Id });
         }
     }

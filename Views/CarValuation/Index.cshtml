@@ -1,0 +1,65 @@
+﻿@model CarDealership.Models.ViewModels.CarValuationVm
+
+@{
+    ViewData["Title"] = "Оценка на автомобил";
+}
+
+<div class="container py-4">
+    <h1 class="h4 mb-3">Оценка на автомобил</h1>
+
+    <form asp-area="" asp-controller="CarValuation" asp-action="Index" method="post" class="row g-3">
+        @Html.AntiForgeryToken()
+
+        <div class="col-md-6">
+            <label class="form-label">Марка</label>
+            <input asp-for="Brand" class="form-control" />
+            <span asp-validation-for="Brand" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Модел</label>
+            <input asp-for="Model" class="form-control" />
+            <span asp-validation-for="Model" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Година</label>
+            <input asp-for="Year" class="form-control" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Километраж</label>
+            <input asp-for="Mileage" class="form-control" />
+            <span asp-validation-for="Mileage" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Гориво</label>
+            <select asp-for="FuelType" class="form-select">
+                <option value="">-- избери --</option>
+                <option value="Petrol">Petrol</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Electric">Electric</option>
+            </select>
+            <span asp-validation-for="FuelType" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Изчисли оценка</button>
+        </div>
+    </form>
+
+    @if (Model?.IsCalculated == true)
+    {
+        <div class="alert alert-success mt-4 text-center">
+            Очаквана пазарна стойност:
+            <div class="h4 mt-2">@Model.EstimatedPrice €</div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

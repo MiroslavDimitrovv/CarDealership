@@ -15,6 +15,10 @@ namespace CarDealership.Models
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser? User { get; set; }
 
+        [Display(Name = "Клиент")]
+        public int? ClientId { get; set; }
+        public Client? Client { get; set; }
+
         [Required]
         [DataType(DataType.Date)]
         [Display(Name = "Начална дата")]
@@ -25,7 +29,10 @@ namespace CarDealership.Models
         [Display(Name = "Крайна дата")]
         public DateTime EndDate { get; set; }
 
+        [Display(Name = "Цена / ден")]
         public decimal PricePerDay { get; set; }
+
+        [Display(Name = "Дни")]
         public int Days { get; set; }
 
         [Display(Name = "Обща цена")]
@@ -35,7 +42,8 @@ namespace CarDealership.Models
         {
             Active = 1,
             Completed = 2,
-            Cancelled = 3
+            Cancelled = 3,
+            ReleasedByOperator = 4
         }
 
         [Display(Name = "Статус")]
@@ -43,8 +51,8 @@ namespace CarDealership.Models
 
         public enum PaymentMethod
         {
-            CashOnPickup = 1,   
-            CardPrepay = 2     
+            CashOnPickup = 1,
+            CardPrepay = 2
         }
 
         [Display(Name = "Метод на плащане")]
