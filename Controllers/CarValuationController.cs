@@ -1,32 +1,68 @@
 ﻿using CarDealership.Models.ViewModels;
+using CarDealership.Services.CarValuation;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarDealership.Controllers
 {
-	public class CarValuationController : Controller
-	{
-		[HttpGet]
-		public IActionResult Index()
-		{
-			return View(new CarValuationVm());
-		}
+    public class CarValuationController : Controller
+    {
+        private readonly ICarValuationService _carValuationService;
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Index(CarValuationVm model)
-		{
-			if (!ModelState.IsValid)
-				return View(model);
+        public CarValuationController(ICarValuationService carValuationService)
+        {
+            _carValuationService = carValuationService;
+        }
 
-			await Task.Delay(200);
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return View(new CarValuationVm());
+        }
 
-			model.EstimatedPrice =
-				model.Year >= 2020 ? 22000 :
-				model.Year >= 2015 ? 16000 :
-				9000;
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(CarValuationVm vm, CancellationToken ct)
+        {
+            vm.ErrorMessage = null;
+            vm.IsCalculated = false;
+            vm.EstimatedPrice = null;
 
-			model.IsCalculated = true;
-			return View(model);
-		}
-	}
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var request = new CarValuationRequest
+            {
+                Brand = vm.Brand,
+                Model = vm.Model,
+                Year = vm.Year!.Value,
+                Mileage = vm.Mileage!.Value,
+                FuelType = vm.FuelType,
+                Transmission = vm.Transmission,
+                Engine = vm.Engine,
+                HorsePower = vm.HorsePower!.Value,
+                BodyType = vm.BodyType,
+                Condition = vm.Condition,
+                HadAccident = vm.HadAccident,
+                OwnersCount = vm.OwnersCount
+            };
+
+            try
+            {
+                var result = await _carValuationService.GetValuationAsync(request, ct);
+
+                vm.EstimatedPrice = result.EstimatedPrice;
+                vm.IsCalculated = true;
+            }
+            catch (InvalidOperationException ex)
+            {
+                vm.ErrorMessage = ex.Message;
+            }
+            catch (Exception)
+            {
+                vm.ErrorMessage = "Възникна грешка при изчислението. Моля, опитайте отново.";
+            }
+
+            return View(vm);
+        }
+    }
 }

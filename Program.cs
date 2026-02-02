@@ -1,7 +1,10 @@
 using CarDealership.Data;
 using CarDealership.Models;
+using CarDealership.Services.CarValuation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using CarDealership.Services.CarValuation;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +25,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddErrorDescriber<CarDealership.Services.BulgarianIdentityErrorDescriber>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddHttpClient<AutoDevCarValuationService>();
+builder.Services.AddScoped<ICarValuationService, AutoDevCarValuationService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -51,12 +57,6 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "carvaluation",
-    pattern: "CarValuation/{action=Index}/{id?}",
-    defaults: new { controller = "CarValuation" });
-
 
 app.MapControllerRoute(
     name: "default",
