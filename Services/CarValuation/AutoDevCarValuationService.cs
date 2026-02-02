@@ -92,7 +92,7 @@ namespace CarDealership.Services.CarValuation
             return new CarValuationResult
             {
                 EstimatedPrice = median,
-                Currency = "USD",
+                Currency = "EUR",
                 Provider = "auto.dev (median listings)"
             };
         }

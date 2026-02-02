@@ -52,6 +52,9 @@ namespace CarDealership.Controllers
 
                 vm.EstimatedPrice = result.EstimatedPrice;
                 vm.IsCalculated = true;
+
+                vm.Currency = result.Currency;
+
             }
             catch (InvalidOperationException ex)
             {

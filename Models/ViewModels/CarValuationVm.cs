@@ -56,8 +56,7 @@ namespace CarDealership.Models.ViewModels
         public int OwnersCount { get; set; } = 1;
         public decimal? EstimatedPrice { get; set; }
         public bool IsCalculated { get; set; }
-
-        // ✅ НОВО: за да не крашва, а да покажем грешка на страницата
+        public string Currency { get; set; } = "EUR";
         public string? ErrorMessage { get; set; }
     }
 }

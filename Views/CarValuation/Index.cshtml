@@ -178,7 +178,7 @@
     {
         <div class="alert alert-success mt-4 text-center">
             Очаквана пазарна стойност:
-            <div class="h4 mt-2">@Model.EstimatedPrice @*  *@</div>
+            <div class="h4 mt-2">@Model.EstimatedPrice @Model.Currency</div>
         </div>
     }
 </div>
@@ -192,11 +192,46 @@
             const loadingBox = document.getElementById('loadingBox');
             const submitBtn = document.getElementById('submitBtn');
 
-            form.addEventListener('submit', function () {
-                loadingBox.classList.remove('d-none');
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Проверка...';
+            function hasEmptyRequired() {
+                const requiredFields = form.querySelectorAll('[data-val-required]');
+                for (const el of requiredFields) {
+                    if (el.tagName === 'SELECT') {
+                        if (!el.value || el.value.trim() === '') return true;
+                    } else {
+                        if (!el.value || el.value.trim() === '') return true;
+                    }
+                }
+                return false;
+            }
+
+            form.addEventListener('submit', function (e) {
+                if (hasEmptyRequired()) {
+                    return;
+                }
+
+                setTimeout(function () {
+                    const hasErrors = form.querySelectorAll('.input-validation-error').length > 0;
+
+                    if (hasErrors) {
+                        loadingBox.classList.add('d-none');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Изчисли оценка';
+                        e.preventDefault();
+                        return;
+                    }
+
+                    loadingBox.classList.remove('d-none');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Проверка...';
+                }, 0);
+            });
+
+            form.addEventListener('input', function () {
+                loadingBox.classList.add('d-none');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Изчисли оценка';
             });
         })();
     </script>
 }
+
