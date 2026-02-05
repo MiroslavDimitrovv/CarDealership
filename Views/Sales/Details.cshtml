@@ -1,40 +1,92 @@
-﻿<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="row g-4">
-            <div class="col-md-7">
-                <img src="~/images/cars/@(Model.ImageFileName ?? "placeholder.jpg")"
-                     class="img-fluid rounded shadow-sm"
-                     style="max-height:420px; width:100%; object-fit:cover;"
-                     alt="@Model.Brand @Model.Model" />
-            </div>
+﻿@model CarDealership.Models.Car
+@using CarDealership.Data
+@using CarDealership.Models
+@using Microsoft.AspNetCore.Identity
+@inject ApplicationDbContext Db
+@inject UserManager<ApplicationUser> UserManager
 
-            <div class="col-md-5">
-                <h2>@Model.Brand @Model.Model (@Model.Year)</h2>
+@{
+    ViewData["Title"] = "Детайли (Продажба)";
 
-                <div class="h4 text-success mb-2">
-                    @((Model.SalePrice ?? 0).ToString("0")) €
+    var userId = User.Identity?.IsAuthenticated == true ? UserManager.GetUserId(User) : null;
+    var isFav = !string.IsNullOrWhiteSpace(userId) && Db.Favorites.Any(f => f.UserId == userId && f.CarId == Model.Id);
+
+    string BgFuel(string v) => v switch
+    {
+        "Petrol" => "Бензин",
+        "Diesel" => "Дизел",
+        "Hybrid" => "Хибрид",
+        "Electric" => "Електрическа",
+        _ => v
+    };
+
+    string BgTransmission(string v) => v switch
+    {
+        "Manual" => "Ръчна",
+        "Automatic" => "Автоматична",
+        _ => v
+    };
+}
+
+<div class="container py-4">
+    <a asp-action="Index" class="btn btn-link mb-3">← Назад</a>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <img src="~/images/cars/@(Model.ImageFileName ?? "placeholder.jpg")"
+                         class="img-fluid rounded shadow-sm"
+                         style="max-height:420px; width:100%; object-fit:cover;"
+                         alt="@Model.Brand @Model.Model" />
                 </div>
 
-                <div class="text-muted mb-3">
-                    @Model.Engine • @Model.HorsePower hp • @Model.Transmission
+                <div class="col-md-5">
+                    <h2>@Model.Brand @Model.Model (@Model.Year)</h2>
+
+                    <div class="h4 text-success mb-2">
+                        @((Model.SalePrice ?? 0).ToString("0")) €
+                    </div>
+
+                    <div class="text-muted mb-3">
+                        @Model.Engine • @Model.HorsePower hp • @BgTransmission(Model.Transmission)
+                    </div>
+
+                    <dl class="row small">
+                        <dt class="col-5">Километраж</dt>
+                        <dd class="col-7">@Model.Mileage km</dd>
+
+                        <dt class="col-5">Гориво</dt>
+                        <dd class="col-7">@BgFuel(Model.FuelType)</dd>
+
+                        <dt class="col-5">Описание</dt>
+                        <dd class="col-7">@Model.Description</dd>
+                    </dl>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form asp-controller="Favorites" asp-action="Toggle" method="post" class="mb-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="carId" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                @(isFav ? " Премахни от любими" : " Добави в любими")
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary w-100 mb-2">
+                            Влез, за да добавиш в любими
+                        </a>
+                    }
+
+                    <button class="btn btn-success w-100"
+                            data-bs-toggle="modal"
+                            data-bs-target="#contactModal">
+                        Купи
+                    </button>
                 </div>
-
-                <dl class="row small">
-                    <dt class="col-5">Километраж</dt>
-                    <dd class="col-7">@Model.Mileage km</dd>
-
-                    <dt class="col-5">Гориво</dt>
-                    <dd class="col-7">@Model.FuelType</dd>
-
-                    <dt class="col-5">Описание</dt>
-                    <dd class="col-7">@Model.Description</dd>
-                </dl>
-
-                <button class="btn btn-success w-100"
-                        data-bs-toggle="modal"
-                        data-bs-target="#contactModal">
-                    Купи
-                </button>
             </div>
         </div>
     </div>

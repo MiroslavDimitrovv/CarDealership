@@ -30,26 +30,33 @@ namespace CarDealership.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
-            [EmailAddress]
+            [Display(Name = "Имейл")]
+            [Required(ErrorMessage = "Моля, въведете имейл.")]
+            [EmailAddress(ErrorMessage = "Моля, въведете валиден имейл адрес.")]
             public string Email { get; set; } = string.Empty;
 
-            [Required]
-            [StringLength(50, MinimumLength = 2)]
+            [Display(Name = "Собствено име")]
+            [Required(ErrorMessage = "Моля, въведете собствено име.")]
+            [StringLength(50, MinimumLength = 2, ErrorMessage = "Собственото име трябва да е между {2} и {1} символа.")]
             public string FirstName { get; set; } = string.Empty;
 
-            [Required]
-            [StringLength(50, MinimumLength = 2)]
+            [Display(Name = "Фамилия")]
+            [Required(ErrorMessage = "Моля, въведете фамилия.")]
+            [StringLength(50, MinimumLength = 2, ErrorMessage = "Фамилията трябва да е между {2} и {1} символа.")]
             public string LastName { get; set; } = string.Empty;
 
-            [Required]
-            [Phone]
+            [Display(Name = "Телефон")]
+            [Required(ErrorMessage = "Моля, въведете телефонен номер.")]
+            [Phone(ErrorMessage = "Моля, въведете валиден телефонен номер.")]
             public string PhoneNumber { get; set; } = string.Empty;
 
-            [Required]
+            [Display(Name = "Парола")]
+            [Required(ErrorMessage = "Моля, въведете парола.")]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
 
+            [Display(Name = "Потвърди парола")]
+            [Required(ErrorMessage = "Моля, потвърдете паролата.")]
             [DataType(DataType.Password)]
             [Compare("Password", ErrorMessage = "Паролите не съвпадат.")]
             public string ConfirmPassword { get; set; } = string.Empty;

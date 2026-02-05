@@ -3,7 +3,6 @@ using CarDealership.Models;
 using CarDealership.Services.CarValuation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using CarDealership.Services.CarValuation;
 
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,256 +1,298 @@
 ﻿@model CarDealership.Models.Car
+@using CarDealership.Data
+@using CarDealership.Models
+@using Microsoft.AspNetCore.Identity
+@inject ApplicationDbContext Db
+@inject UserManager<ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Детайли";
+
+    var userId = User.Identity?.IsAuthenticated == true ? UserManager.GetUserId(User) : null;
+    var isFav = !string.IsNullOrWhiteSpace(userId) && Db.Favorites.Any(f => f.UserId == userId && f.CarId == Model.Id);
+
+    string BgFuel(string v) => v switch
+    {
+        "Petrol" => "Бензин",
+        "Diesel" => "Дизел",
+        "Hybrid" => "Хибрид",
+        "Electric" => "Електрическа",
+        _ => v
+    };
+
+    string BgTransmission(string v) => v switch
+    {
+        "Manual" => "Ръчна",
+        "Automatic" => "Автоматична",
+        _ => v
+    };
 }
 
-<a asp-action="Index" class="btn btn-link mb-3">← Назад</a>
+<div class="container py-4">
+    <a asp-action="Index" class="btn btn-link mb-3">← Назад</a>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="row g-4">
-            <div class="col-md-7">
-                <img src="~/images/cars/@(Model.ImageFileName ?? "placeholder.jpg")"
-                     class="img-fluid rounded shadow-sm"
-                     style="max-height:420px; width:100%; object-fit:cover;"
-                     alt="@Model.Brand @Model.Model" />
-            </div>
-
-            <div class="col-md-5">
-                <h2>@Model.Brand @Model.Model (@Model.Year)</h2>
-
-                <div class="h5 text-primary mb-3">
-                    @((Model.RentPricePerDay ?? 0).ToString("0.00")) € / ден
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <img src="~/images/cars/@(Model.ImageFileName ?? "placeholder.jpg")"
+                         class="img-fluid rounded shadow-sm"
+                         style="max-height:420px; width:100%; object-fit:cover;"
+                         alt="@Model.Brand @Model.Model" />
                 </div>
 
-                <div class="text-muted mb-3">
-                    @Model.Engine • @Model.HorsePower hp • @Model.Transmission
-                </div>
+                <div class="col-md-5">
+                    <h2>@Model.Brand @Model.Model (@Model.Year)</h2>
 
-                @if (!string.IsNullOrWhiteSpace(Model.Description))
-                {
-                    <p class="small text-muted">@Model.Description</p>
-                }
+                    <div class="h5 text-primary mb-3">
+                        @((Model.RentPricePerDay ?? 0).ToString("0.00")) € / ден
+                    </div>
 
-                <hr />
-                <h5 class="mb-3">Наем на автомобила</h5>
+                    <div class="text-muted mb-3">
+                        @Model.Engine • @Model.HorsePower hp • @BgTransmission(Model.Transmission)
+                    </div>
 
-                @if (!(User.Identity?.IsAuthenticated ?? false))
-                {
-                    <div class="alert alert-warning">Трябва да си влязъл в профила си.</div>
-                }
-                else
-                {
-                    <form id="rentForm" asp-action="Rent" method="post" class="row g-3">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="carId" value="@Model.Id" />
-                        <input type="hidden" name="paymentMethod" id="paymentMethod" value="CashOnPickup" />
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p class="small text-muted">@Model.Description</p>
+                    }
 
-                        <div class="col-6">
-                            <label class="form-label">От дата</label>
-                            <input id="startDate" class="form-control" type="date"
-                                   name="startDate"
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
-                                   required />
-                        </div>
-
-                        <div class="col-6">
-                            <label class="form-label">До дата</label>
-                            <input id="endDate" class="form-control" type="date"
-                                   name="endDate"
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
-                                   required />
-                        </div>
-
-                        <div id="rentClientError" class="alert alert-danger d-none mb-0"></div>
-
-                        <div class="col-12">
-                            <button id="openRentConfirm" type="button" class="btn btn-primary w-100">
-                                Потвърди наем
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form asp-controller="Favorites" asp-action="Toggle" method="post" class="mb-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="carId" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                @(isFav ? " Премахни от любими" : " Добави в любими")
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary w-100 mb-3">
+                            Влез, за да добавиш в любими
+                        </a>
+                    }
 
-                    <!-- CONFIRM MODAL -->
-                    <div class="modal fade" id="rentConfirmModal" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Потвърждение</h5>
-                                    <button class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <ul class="small mb-0">
-                                        <li>От: <strong id="confirmStart">-</strong></li>
-                                        <li>До: <strong id="confirmEnd">-</strong></li>
-                                        <li class="mt-2">
-                                            Цена / ден:
-                                            <strong>@((Model.RentPricePerDay ?? 0).ToString("0.00")) €</strong>
-                                        </li>
-                                        <li>
-                                            Общо:
-                                            <strong id="confirmTotal">-</strong>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
-                                    <button id="goToPayment" class="btn btn-primary">Напред към плащане</button>
+                    <hr />
+                    <h5 class="mb-3">Наем на автомобила</h5>
+
+                    @if (!(User.Identity?.IsAuthenticated ?? false))
+                    {
+                        <div class="alert alert-warning">Трябва да си влязъл в профила си.</div>
+                    }
+                    else
+                    {
+                        <form id="rentForm" asp-action="Rent" method="post" class="row g-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="carId" value="@Model.Id" />
+                            <input type="hidden" name="paymentMethod" id="paymentMethod" value="CashOnPickup" />
+
+                            <div class="col-6">
+                                <label class="form-label">От дата</label>
+                                <input id="startDate" class="form-control" type="date"
+                                       name="startDate"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       required />
+                            </div>
+
+                            <div class="col-6">
+                                <label class="form-label">До дата</label>
+                                <input id="endDate" class="form-control" type="date"
+                                       name="endDate"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       required />
+                            </div>
+
+                            <div id="rentClientError" class="alert alert-danger d-none mb-0"></div>
+
+                            <div class="col-12">
+                                <button id="openRentConfirm" type="button" class="btn btn-primary w-100">
+                                    Потвърди наем
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="modal fade" id="rentConfirmModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Потвърждение</h5>
+                                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="small mb-0">
+                                            <li>От: <strong id="confirmStart">-</strong></li>
+                                            <li>До: <strong id="confirmEnd">-</strong></li>
+                                            <li class="mt-2">
+                                                Цена / ден:
+                                                <strong>@((Model.RentPricePerDay ?? 0).ToString("0.00")) €</strong>
+                                            </li>
+                                            <li>
+                                                Общо:
+                                                <strong id="confirmTotal">-</strong>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
+                                        <button id="goToPayment" class="btn btn-primary">Напред към плащане</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- PAYMENT MODAL -->
-                    <div class="modal fade" id="paymentModal" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Плащане</h5>
-                                    <button class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-
-                                <div class="modal-body">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="payRadio"
-                                               value="CashOnPickup" checked>
-                                        <label class="form-check-label">В брой при вземане</label>
+                        <div class="modal fade" id="paymentModal" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Плащане</h5>
+                                        <button class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
 
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" name="payRadio"
-                                               value="CardPrepay">
-                                        <label class="form-check-label">Плащане с карта</label>
-                                    </div>
-
-                                    <div id="cardTestBox" class="border rounded p-3 mt-3 d-none">
-                                        <div id="cardPayError" class="alert alert-danger d-none"></div>
-                                        <div class="d-flex gap-2">
-                                            <button id="btnCardSuccess" type="button" class="btn btn-success w-100">
-                                                Успешно плащане
-                                            </button>
-                                            <button id="btnCardFail" type="button" class="btn btn-outline-danger w-100">
-                                                Неуспешно плащане
-                                            </button>
+                                    <div class="modal-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payRadio"
+                                                   value="CashOnPickup" checked>
+                                            <label class="form-check-label">В брой при вземане</label>
                                         </div>
+
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="payRadio"
+                                                   value="CardPrepay">
+                                            <label class="form-check-label">Плащане с карта</label>
+                                        </div>
+
+                                        <div id="cardTestBox" class="border rounded p-3 mt-3 d-none">
+                                            <div id="cardPayError" class="alert alert-danger d-none"></div>
+                                            <div class="d-flex gap-2">
+                                                <button id="btnCardSuccess" type="button" class="btn btn-success w-100">
+                                                    Успешно плащане
+                                                </button>
+                                                <button id="btnCardFail" type="button" class="btn btn-outline-danger w-100">
+                                                    Неуспешно плащане
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <hr />
+                                        <ul class="small mb-0">
+                                            <li>Период: <strong id="payPeriod">-</strong></li>
+                                            <li>
+                                                Цена / ден:
+                                                <strong>@((Model.RentPricePerDay ?? 0).ToString("0.00")) €</strong>
+                                            </li>
+                                            <li>Общо: <strong id="payTotal">-</strong></li>
+                                        </ul>
                                     </div>
 
-                                    <hr />
-                                    <ul class="small mb-0">
-                                        <li>Период: <strong id="payPeriod">-</strong></li>
-                                        <li>
-                                            Цена / ден:
-                                            <strong>@((Model.RentPricePerDay ?? 0).ToString("0.00")) €</strong>
-                                        </li>
-                                        <li>Общо: <strong id="payTotal">-</strong></li>
-                                    </ul>
-                                </div>
-
-                                <div class="modal-footer">
-                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
-                                    <button id="cashSubmitBtn" type="submit" form="rentForm" class="btn btn-primary">
-                                        Потвърди (в брой)
-                                    </button>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
+                                        <button id="cashSubmitBtn" type="submit" form="rentForm" class="btn btn-primary">
+                                            Потвърди (в брой)
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <script>
-                        const pricePerDay = @((Model.RentPricePerDay ?? 0)
-                                                    .ToString(System.Globalization.CultureInfo.InvariantCulture));
+                        <script>
+                            const pricePerDay = @((Model.RentPricePerDay ?? 0)
+                                                            .ToString(System.Globalization.CultureInfo.InvariantCulture));
 
-                    const startInput = document.getElementById("startDate");
-                    const endInput = document.getElementById("endDate");
-                    const errorBox = document.getElementById("rentClientError");
+                        const startInput = document.getElementById("startDate");
+                        const endInput = document.getElementById("endDate");
+                        const errorBox = document.getElementById("rentClientError");
 
-                        function parseDate(v) {
-                            const d = new Date(v + "T00:00:00");
-                            return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                        }
-
-                        function calcDays(s, e) {
-                            return Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
-                        }
-
-                        document.getElementById("openRentConfirm").onclick = () => {
-                            errorBox.classList.add("d-none");
-
-                            if (!startInput.value || !endInput.value) {
-                                errorBox.textContent = "Избери дати.";
-                                errorBox.classList.remove("d-none");
-                                return;
+                            function parseDate(v) {
+                                const d = new Date(v + "T00:00:00");
+                                return new Date(d.getFullYear(), d.getMonth(), d.getDate());
                             }
 
-                            const s = parseDate(startInput.value);
-                            const e = parseDate(endInput.value);
-
-                            if (e < s) {
-                                errorBox.textContent = "Крайната дата не може да е преди началната.";
-                                errorBox.classList.remove("d-none");
-                                return;
+                            function calcDays(s, e) {
+                                return Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
                             }
 
-                            const days = calcDays(s, e);
-                            const total = days * pricePerDay;
+                            document.getElementById("openRentConfirm").onclick = () => {
+                                errorBox.classList.add("d-none");
 
-                            document.getElementById("confirmStart").textContent = startInput.value;
-                            document.getElementById("confirmEnd").textContent = endInput.value;
-                            document.getElementById("confirmTotal").textContent = total.toFixed(2) + " €";
-
-                            new bootstrap.Modal(rentConfirmModal).show();
-                        };
-
-                        document.getElementById("goToPayment").onclick = () => {
-                            const s = parseDate(startInput.value);
-                            const e = parseDate(endInput.value);
-
-                            const days = calcDays(s, e);
-                            const total = days * pricePerDay;
-
-                            document.getElementById("payPeriod").textContent =
-                                `${startInput.value} – ${endInput.value} (${days} дни)`;
-                            document.getElementById("payTotal").textContent =
-                                total.toFixed(2) + " €";
-
-                            bootstrap.Modal.getInstance(rentConfirmModal).hide();
-                            new bootstrap.Modal(paymentModal).show();
-                        };
-
-                        document.querySelectorAll('input[name="payRadio"]').forEach(r => {
-                            r.onchange = () => {
-                                document.getElementById("paymentMethod").value = r.value;
-
-                                if (r.value === "CardPrepay") {
-                                    cardTestBox.classList.remove("d-none");
-                                    cashSubmitBtn.classList.add("d-none");
-                                } else {
-                                    cardTestBox.classList.add("d-none");
-                                    cashSubmitBtn.classList.remove("d-none");
+                                if (!startInput.value || !endInput.value) {
+                                    errorBox.textContent = "Избери дати.";
+                                    errorBox.classList.remove("d-none");
+                                    return;
                                 }
+
+                                const s = parseDate(startInput.value);
+                                const e = parseDate(endInput.value);
+
+                                if (e < s) {
+                                    errorBox.textContent = "Крайната дата не може да е преди началната.";
+                                    errorBox.classList.remove("d-none");
+                                    return;
+                                }
+
+                                const days = calcDays(s, e);
+                                const total = days * pricePerDay;
+
+                                document.getElementById("confirmStart").textContent = startInput.value;
+                                document.getElementById("confirmEnd").textContent = endInput.value;
+                                document.getElementById("confirmTotal").textContent = total.toFixed(2) + " €";
+
+                                new bootstrap.Modal(rentConfirmModal).show();
                             };
-                        });
 
-                        btnCardSuccess.onclick = () => {
-                            document.getElementById("paymentMethod").value = "CardPrepay";
-                            rentForm.submit();
-                        };
+                            document.getElementById("goToPayment").onclick = () => {
+                                const s = parseDate(startInput.value);
+                                const e = parseDate(endInput.value);
 
-                        btnCardFail.onclick = () => {
-                            document.getElementById("cardPayError").textContent = "Плащането е неуспешно.";
-                            document.getElementById("cardPayError").classList.remove("d-none");
-                        };
-                    </script>
-                                }
+                                const days = calcDays(s, e);
+                                const total = days * pricePerDay;
+
+                                document.getElementById("payPeriod").textContent =
+                                    `${startInput.value} – ${endInput.value} (${days} дни)`;
+                                document.getElementById("payTotal").textContent =
+                                    total.toFixed(2) + " €";
+
+                                bootstrap.Modal.getInstance(rentConfirmModal).hide();
+                                new bootstrap.Modal(paymentModal).show();
+                            };
+
+                            document.querySelectorAll('input[name="payRadio"]').forEach(r => {
+                                r.onchange = () => {
+                                    document.getElementById("paymentMethod").value = r.value;
+
+                                    if (r.value === "CardPrepay") {
+                                        cardTestBox.classList.remove("d-none");
+                                        cashSubmitBtn.classList.add("d-none");
+                                    } else {
+                                        cardTestBox.classList.add("d-none");
+                                        cashSubmitBtn.classList.remove("d-none");
+                                    }
+                                };
+                            });
+
+                            btnCardSuccess.onclick = () => {
+                                document.getElementById("paymentMethod").value = "CardPrepay";
+                                rentForm.submit();
+                            };
+
+                            btnCardFail.onclick = () => {
+                                document.getElementById("cardPayError").textContent = "Плащането е неуспешно.";
+                                document.getElementById("cardPayError").classList.remove("d-none");
+                            };
+                        </script>
+                                        }
+                </div>
             </div>
         </div>
     </div>

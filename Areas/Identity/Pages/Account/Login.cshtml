@@ -44,7 +44,6 @@
                                        autocomplete="off" />
                                 <label class="form-check-label" asp-for="Input.RememberMe">Запомни ме</label>
                             </div>
-                            <a id="forgot-password" asp-page="./ForgotPassword" class="small">Забравена парола?</a>
                         </div>
 
                         <button id="login-submit" type="submit" class="btn btn-primary w-100">
@@ -56,9 +55,6 @@
                         <div class="d-flex justify-content-between">
                             <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none">
                                 Нямаш акаунт? Регистрация
-                            </a>
-                            <a asp-page="./ResendEmailConfirmation" class="text-decoration-none small">
-                                Потвърди имейл
                             </a>
                         </div>
                     </form>

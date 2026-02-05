@@ -15,6 +15,7 @@ namespace CarDealership.Data
         public DbSet<Client> Clients => Set<Client>();
         public DbSet<Rental> Rentals => Set<Rental>();
         public DbSet<Sale> Sales => Set<Sale>();
+        public DbSet<Favorite> Favorites => Set<Favorite>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,17 +29,33 @@ namespace CarDealership.Data
                 .Property(c => c.RentPricePerDay)
                 .HasPrecision(18, 2);
 
-           modelBuilder.Entity<Rental>()
-    .Property(r => r.TotalPrice)
-    .HasPrecision(18, 2);
+            modelBuilder.Entity<Rental>()
+                .Property(r => r.TotalPrice)
+                .HasPrecision(18, 2);
 
-modelBuilder.Entity<Rental>()
-    .Property(r => r.PricePerDay)
-    .HasPrecision(18, 2);
+            modelBuilder.Entity<Rental>()
+                .Property(r => r.PricePerDay)
+                .HasPrecision(18, 2);
 
             modelBuilder.Entity<Sale>()
                 .Property(s => s.FinalPrice)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Favorite>()
+                .HasIndex(f => new { f.UserId, f.CarId })
+                .IsUnique();
+
+            modelBuilder.Entity<Favorite>()
+                .HasOne(f => f.Car)
+                .WithMany()
+                .HasForeignKey(f => f.CarId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Favorite>()
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
