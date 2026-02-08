@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+Console.WriteLine("DefaultConnection raw = [" + (connectionString ?? "NULL") + "]");
+Console.WriteLine("DefaultConnection length = " + (connectionString?.Length ?? 0));
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
