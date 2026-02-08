@@ -6,7 +6,6 @@ namespace CarDealership.Data
     {
         public static void Seed(ApplicationDbContext db)
         {
-            // ако вече има коли – не добавяме пак
             if (db.Cars.Any()) return;
 
             var cars = new List<Car>

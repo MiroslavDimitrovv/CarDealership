@@ -3,6 +3,7 @@ using CarDealership.Models;
 using CarDealership.Services.CarValuation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,8 @@ Console.WriteLine("DefaultConnection length = " + (connectionString?.Length ?? 0
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+Console.OutputEncoding = Encoding.UTF8;
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
