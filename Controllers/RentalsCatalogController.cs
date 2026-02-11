@@ -20,7 +20,8 @@ namespace CarDealership.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(CarFilterVm filter)
         {
-            var today = DateTime.Today;
+            var today = DateTime.UtcNow.Date;
+      
 
             var baseQuery = _db.Cars.AsNoTracking()
                 .Where(c => c.Type == Car.ListingType.ForRent &&
@@ -130,7 +131,7 @@ namespace CarDealership.Controllers
             var start = startDate.Date;
             var end = endDate.Date;
 
-            if (start < DateTime.Today || end < start)
+            if (start < DateTime.UtcNow.Date || end < start)
             {
                 TempData["Error"] = "Невалиден период за наем.";
                 return RedirectToAction(nameof(Details), new { id = carId });

@@ -11,15 +11,6 @@
     var userId = User.Identity?.IsAuthenticated == true ? UserManager.GetUserId(User) : null;
     var isFav = !string.IsNullOrWhiteSpace(userId) && Db.Favorites.Any(f => f.UserId == userId && f.CarId == Model.Id);
 
-    string BgFuel(string v) => v switch
-    {
-        "Petrol" => "Бензин",
-        "Diesel" => "Дизел",
-        "Hybrid" => "Хибрид",
-        "Electric" => "Електрическа",
-        _ => v
-    };
-
     string BgTransmission(string v) => v switch
     {
         "Manual" => "Ръчна",
