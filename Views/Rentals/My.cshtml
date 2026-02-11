@@ -3,6 +3,15 @@
 
 @{
     ViewData["Title"] = "Моите наеми";
+
+    string BgOffice(OfficeLocation o) => o switch
+    {
+        OfficeLocation.Ruse => "Офис Русе",
+        OfficeLocation.Burgas => "Офис Бургас",
+        OfficeLocation.Sofia => "Офис София",
+        OfficeLocation.Varna => "Офис Варна",
+        _ => o.ToString()
+    };
 }
 
 <h2 class="mb-3">Моите наеми</h2>
@@ -28,6 +37,8 @@ else
                 <tr>
                     <th>Кола</th>
                     <th>Период</th>
+                    <th>Вземане</th>
+                    <th>Връщане</th>
                     <th>Дни</th>
                     <th>Общо</th>
                     <th>Плащане</th>
@@ -47,6 +58,9 @@ else
                         </td>
 
                         <td>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</td>
+                        <td>@BgOffice(r.PickupOffice)</td>
+                        <td>@BgOffice(r.ReturnOffice)</td>
+
                         <td>@r.Days</td>
                         <td>@r.TotalPrice €</td>
 
@@ -88,7 +102,7 @@ else
                                 Детайли
                             </a>
 
-                            @if (r.Status == Rental.RentalStatus.Active && r.StartDate.Date > DateTime.Today)
+                            @if (r.Status == Rental.RentalStatus.Active && r.StartDate.Date > DateTime.UtcNow.Date)
                             {
                                 if (isPaid)
                                 {
@@ -114,7 +128,7 @@ else
 
                                                     <div class="alert alert-warning small mb-0 text-center">
                                                         Наемът е платен с карта.
-                                                        <br>
+                                                        <br />
                                                         Сумата от <strong>@r.TotalPrice €</strong> ще бъде възстановена по картата.
                                                     </div>
                                                 </div>

@@ -41,7 +41,9 @@ namespace CarDealership.Controllers
 
             if (rental == null) return NotFound();
 
-            if (rental.StartDate.Date <= DateTime.Today)
+            var todayUtc = DateTime.UtcNow.Date;
+
+            if (rental.StartDate.Date <= todayUtc)
             {
                 TempData["Error"] = "Не можеш да отмениш наем, който вече е започнал.";
                 return RedirectToAction(nameof(My));

@@ -21,7 +21,6 @@ namespace CarDealership.Controllers
         public async Task<IActionResult> Index(CarFilterVm filter)
         {
             var today = DateTime.UtcNow.Date;
-      
 
             var baseQuery = _db.Cars.AsNoTracking()
                 .Where(c => c.Type == Car.ListingType.ForRent &&
@@ -110,7 +109,13 @@ namespace CarDealership.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Rent(int carId, DateTime startDate, DateTime endDate, string paymentMethod)
+        public async Task<IActionResult> Rent(
+            int carId,
+            DateTime startDate,
+            DateTime endDate,
+            OfficeLocation pickupOffice,
+            OfficeLocation returnOffice,
+            string paymentMethod)
         {
             var car = await _db.Cars.FirstOrDefaultAsync(c => c.Id == carId);
             if (car == null)
@@ -128,8 +133,9 @@ namespace CarDealership.Controllers
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
-            var start = startDate.Date;
-            var end = endDate.Date;
+            // ✅ UTC-safe за Postgres timestamptz
+            var start = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
+            var end = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
 
             if (start < DateTime.UtcNow.Date || end < start)
             {
@@ -137,7 +143,7 @@ namespace CarDealership.Controllers
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
-            var days = (end - start).Days + 1;
+            var days = (end.Date - start.Date).Days + 1;
             if (days < 1 || days > 60)
             {
                 TempData["Error"] = "Периодът за наем трябва да е между 1 и 60 дни.";
@@ -175,15 +181,20 @@ namespace CarDealership.Controllers
                 CarId = car.Id,
                 UserId = userId,
                 ClientId = client.Id,
+
                 StartDate = start,
                 EndDate = end,
                 Days = days,
+
                 PricePerDay = car.RentPricePerDay.Value,
                 TotalPrice = car.RentPricePerDay.Value * days,
-                Status = Rental.RentalStatus.Active,
-                PayMethod = pm
-            };
 
+                Status = Rental.RentalStatus.Active,
+                PayMethod = pm,
+
+                PickupOffice = pickupOffice,
+                ReturnOffice = returnOffice
+            };
 
             _db.Rentals.Add(rental);
             await _db.SaveChangesAsync();
