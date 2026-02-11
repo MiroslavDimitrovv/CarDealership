@@ -133,7 +133,6 @@ namespace CarDealership.Controllers
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 
-            // ✅ UTC-safe за Postgres timestamptz
             var start = DateTime.SpecifyKind(startDate.Date, DateTimeKind.Utc);
             var end = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Utc);
 
@@ -176,6 +175,8 @@ namespace CarDealership.Controllers
             if (!Enum.TryParse<Rental.PaymentMethod>(paymentMethod, true, out var pm))
                 pm = Rental.PaymentMethod.CashOnPickup;
 
+            var isPaid = pm == Rental.PaymentMethod.CardPrepay;
+
             var rental = new Rental
             {
                 CarId = car.Id,
@@ -193,7 +194,10 @@ namespace CarDealership.Controllers
                 PayMethod = pm,
 
                 PickupOffice = pickupOffice,
-                ReturnOffice = returnOffice
+                ReturnOffice = returnOffice,
+
+                IsPaid = isPaid,
+                PaidAt = isPaid ? DateTime.UtcNow : null
             };
 
             _db.Rentals.Add(rental);

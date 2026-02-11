@@ -61,6 +61,11 @@ namespace CarDealership.Models
             CardPrepay = 2
         }
 
+        public bool IsPaid { get; set; }
+
+        public DateTime? PaidAt { get; set; }
+
+
         [Display(Name = "Метод на плащане")]
         public PaymentMethod PayMethod { get; set; } = PaymentMethod.CashOnPickup;
 

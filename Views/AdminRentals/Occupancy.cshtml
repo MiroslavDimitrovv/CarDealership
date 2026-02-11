@@ -1,7 +1,17 @@
 ﻿@model IEnumerable<CarDealership.Models.Car>
+@using CarDealership.Models
 
 @{
     ViewData["Title"] = "Автомобили – Заетост";
+
+    string BgOffice(OfficeLocation o) => o switch
+    {
+        OfficeLocation.Ruse => "Офис Русе",
+        OfficeLocation.Burgas => "Офис Бургас",
+        OfficeLocation.Sofia => "Офис София",
+        OfficeLocation.Varna => "Офис Варна",
+        _ => o.ToString()
+    };
 }
 
 <div class="container py-4">
@@ -16,6 +26,15 @@
         </a>
     </div>
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
@@ -29,10 +48,10 @@
                 @foreach (var car in Model)
                 {
                     var activeRentals = car.Rentals?
-                    .Where(r => r.Status == CarDealership.Models.Rental.RentalStatus.Active)
+                    .Where(r => r.Status == Rental.RentalStatus.Active)
                     .OrderBy(r => r.StartDate)
                     .ToList()
-                    ?? new List<CarDealership.Models.Rental>();
+                    ?? new List<Rental>();
 
                     <tr>
                         <td>
@@ -57,17 +76,40 @@
                                 <ul class="mb-0 small">
                                     @foreach (var r in activeRentals)
                                     {
-                                        <li class="mb-2">
+                                        var isCash = r.PayMethod == Rental.PaymentMethod.CashOnPickup;
+
+                                        <li class="mb-3">
                                             <div>
-                                                📅
-                                                <strong>
-                                                    @r.StartDate.ToString("dd.MM.yyyy")
-                                                    –
-                                                    @r.EndDate.ToString("dd.MM.yyyy")
-                                                </strong>
+                                                📅 <strong>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</strong>
                                             </div>
 
                                             <div class="text-muted">
+                                                📍 Вземане: <strong>@BgOffice(r.PickupOffice)</strong>
+                                                • Връщане: <strong>@BgOffice(r.ReturnOffice)</strong>
+                                            </div>
+
+                                            <div class="text-muted">
+                                                💳 Плащане:
+                                                @if (isCash)
+                                                {
+                                                    <span class="badge bg-secondary">В брой</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">Карта</span>
+                                                }
+
+                                                @if (r.IsPaid)
+                                                {
+                                                    <span class="badge bg-success ms-1">Платено</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark ms-1">Неплатено</span>
+                                                }
+                                            </div>
+
+                                            <div class="text-muted mt-1">
                                                 👤 @r.Client?.FullName
                                             </div>
 
@@ -78,66 +120,118 @@
                                             <div class="text-muted small">
                                                 ✉️ @r.Client?.Email
                                             </div>
-                                        </li>
-                                        <form method="post"
-                                              asp-controller="AdminRentals"
-                                              asp-action="Release"
-                                              class="mt-2">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="rentalId" value="@r.Id" />
 
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#releaseModal-@r.Id">
-                                                Освободи
-                                            </button>
+                                            <div class="d-flex flex-wrap gap-2 mt-2">
 
-                                            <div class="modal fade" id="releaseModal-@r.Id" tabindex="-1">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Освобождаване на автомобил предварително</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                        </div>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editOfficesModal-@r.Id">
+                                                    Офиси
+                                                </button>
 
-                                                        <div class="modal-body">
-                                                            <p class="mb-2">
-                                                                Сигурни ли сте, че искате да освободите автомобила:
-                                                                <strong>@car.Brand @car.Model</strong>?
-                                                            </p>
+                                                <div class="modal fade" id="editOfficesModal-@r.Id" tabindex="-1">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Промяна на офиси</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
 
-                                                            <ul class="small mb-0">
-                                                                <li>
-                                                                    Период:
-                                                                    <strong>
-                                                                        @r.StartDate.ToString("dd.MM.yyyy")
-                                                                        –
-                                                                        @r.EndDate.ToString("dd.MM.yyyy")
-                                                                    </strong>
-                                                                </li>
-                                                                <li>Клиент: <strong>@r.Client?.FullName</strong></li>
-                                                                <li>Телефон: <strong>@r.Client?.PhoneNumber</strong></li>
-                                                                <li>Имейл: <strong>@r.Client?.Email</strong></li>
-                                                            </ul>
-                                                        </div>
+                                                            <form method="post" asp-controller="AdminRentals" asp-action="UpdateOffices">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="rentalId" value="@r.Id" />
 
-                                                        <div class="modal-footer">
-                                                            <button type="button"
-                                                                    class="btn btn-outline-secondary"
-                                                                    data-bs-dismiss="modal">
-                                                                Отказ
-                                                            </button>
+                                                                <div class="modal-body">
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Вземане от</label>
+                                                                        <select class="form-select" name="pickupOffice" required>
+                                                                            <option value="Ruse" selected="@(r.PickupOffice == OfficeLocation.Ruse)">Офис Русе</option>
+                                                                            <option value="Burgas" selected="@(r.PickupOffice == OfficeLocation.Burgas)">Офис Бургас</option>
+                                                                            <option value="Sofia" selected="@(r.PickupOffice == OfficeLocation.Sofia)">Офис София</option>
+                                                                            <option value="Varna" selected="@(r.PickupOffice == OfficeLocation.Varna)">Офис Варна</option>
+                                                                        </select>
+                                                                    </div>
 
-                                                            <button type="submit" class="btn btn-danger">
-                                                                Да, освободи
-                                                            </button>
+                                                                    <div>
+                                                                        <label class="form-label">Връщане в</label>
+                                                                        <select class="form-select" name="returnOffice" required>
+                                                                            <option value="Ruse" selected="@(r.ReturnOffice == OfficeLocation.Ruse)">Офис Русе</option>
+                                                                            <option value="Burgas" selected="@(r.ReturnOffice == OfficeLocation.Burgas)">Офис Бургас</option>
+                                                                            <option value="Sofia" selected="@(r.ReturnOffice == OfficeLocation.Sofia)">Офис София</option>
+                                                                            <option value="Varna" selected="@(r.ReturnOffice == OfficeLocation.Varna)">Офис Варна</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отказ</button>
+                                                                    <button type="submit" class="btn btn-primary">Запази</button>
+                                                                </div>
+                                                            </form>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </form>
 
+                                                @if (isCash && !r.IsPaid)
+                                                {
+                                                    <form method="post" asp-controller="AdminRentals" asp-action="MarkPaid" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="rentalId" value="@r.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                                            Маркирай платено
+                                                        </button>
+                                                    </form>
+                                                }
+
+                                                <form method="post"
+                                                      asp-controller="AdminRentals"
+                                                      asp-action="Release"
+                                                      class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="rentalId" value="@r.Id" />
+
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#releaseModal-@r.Id">
+                                                        Освободи
+                                                    </button>
+
+                                                    <div class="modal fade" id="releaseModal-@r.Id" tabindex="-1">
+                                                        <div class="modal-dialog modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Освобождаване на автомобил предварително</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                </div>
+
+                                                                <div class="modal-body">
+                                                                    <p class="mb-2">
+                                                                        Сигурни ли сте, че искате да освободите автомобила:
+                                                                        <strong>@car.Brand @car.Model</strong>?
+                                                                    </p>
+
+                                                                    <ul class="small mb-0">
+                                                                        <li>Период: <strong>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</strong></li>
+                                                                        <li>Офиси: <strong>@BgOffice(r.PickupOffice)</strong> → <strong>@BgOffice(r.ReturnOffice)</strong></li>
+                                                                        <li>Клиент: <strong>@r.Client?.FullName</strong></li>
+                                                                        <li>Телефон: <strong>@r.Client?.PhoneNumber</strong></li>
+                                                                        <li>Имейл: <strong>@r.Client?.Email</strong></li>
+                                                                    </ul>
+                                                                </div>
+
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отказ</button>
+                                                                    <button type="submit" class="btn btn-danger">Да, освободи</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+
+                                            </div>
+                                        </li>
                                     }
                                 </ul>
                             }

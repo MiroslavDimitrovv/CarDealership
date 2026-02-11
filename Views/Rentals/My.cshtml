@@ -49,7 +49,7 @@ else
             <tbody>
                 @foreach (var r in Model)
                 {
-                    var isPaid = r.PayMethod == Rental.PaymentMethod.CardPrepay;
+                    var isPaid = r.IsPaid;
 
                     <tr>
                         <td>

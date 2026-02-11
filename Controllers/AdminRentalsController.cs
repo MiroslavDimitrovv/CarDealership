@@ -32,6 +32,52 @@ namespace CarDealership.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOffices(int rentalId, OfficeLocation pickupOffice, OfficeLocation returnOffice)
+        {
+            var rental = await _db.Rentals.FirstOrDefaultAsync(r => r.Id == rentalId);
+            if (rental == null)
+                return NotFound();
+
+            if (rental.Status != Rental.RentalStatus.Active)
+            {
+                TempData["Error"] = "Може да променяш офисите само на активен наем.";
+                return RedirectToAction(nameof(Occupancy));
+            }
+
+            rental.PickupOffice = pickupOffice;
+            rental.ReturnOffice = returnOffice;
+
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Офисите са обновени.";
+            return RedirectToAction(nameof(Occupancy));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkPaid(int rentalId)
+        {
+            var rental = await _db.Rentals.FirstOrDefaultAsync(r => r.Id == rentalId);
+            if (rental == null)
+                return NotFound();
+
+            if (rental.Status != Rental.RentalStatus.Active)
+            {
+                TempData["Error"] = "Може да маркираш платено само активен наем.";
+                return RedirectToAction(nameof(Occupancy));
+            }
+
+            rental.IsPaid = true;
+            rental.PaidAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+
+            TempData["Success"] = "Наемът е маркиран като платен.";
+            return RedirectToAction(nameof(Occupancy));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Release(int rentalId)
         {
             var rental = await _db.Rentals
@@ -44,10 +90,17 @@ namespace CarDealership.Controllers
             if (rental.Status != Rental.RentalStatus.Active)
                 return RedirectToAction(nameof(Occupancy));
 
-            rental.Status = Rental.RentalStatus.Completed;
+       
+            // if (rental.PayMethod == Rental.PaymentMethod.CashOnPickup && !rental.IsPaid)
+            // {
+            //     rental.IsPaid = true;
+            //     rental.PaidAt = DateTime.UtcNow;
+            // }
+
+            rental.Status = Rental.RentalStatus.ReleasedByOperator; // или Completed, избери 1
 
             if (rental.Car != null)
-                rental.Status = Rental.RentalStatus.ReleasedByOperator;
+                rental.Car.Status = Car.StatusType.Available; // ✅ връщаме колата като свободна
 
             await _db.SaveChangesAsync();
 
