@@ -35,6 +35,12 @@ namespace CarDealership.Models
         [Display(Name = "Дни")]
         public int Days { get; set; }
 
+        [Required]
+        public OfficeLocation PickupOffice { get; set; }
+
+        [Required]
+        public OfficeLocation ReturnOffice { get; set; }
+
         [Display(Name = "Обща цена")]
         public decimal TotalPrice { get; set; }
 
