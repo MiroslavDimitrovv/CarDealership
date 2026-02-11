@@ -3,23 +3,15 @@ using CarDealership.Models;
 using CarDealership.Services.CarValuation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-Console.WriteLine("DefaultConnection raw = [" + (connectionString ?? "NULL") + "]");
-Console.WriteLine("DefaultConnection length = " + (connectionString?.Length ?? 0));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")?.Trim();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-Console.OutputEncoding = Encoding.UTF8;
-Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 
@@ -28,6 +20,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 6;
 })
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddErrorDescriber<CarDealership.Services.BulgarianIdentityErrorDescriber>()
 .AddDefaultTokenProviders();
@@ -43,7 +36,6 @@ if (!string.IsNullOrEmpty(port))
 {
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
-
 
 var app = builder.Build();
 
