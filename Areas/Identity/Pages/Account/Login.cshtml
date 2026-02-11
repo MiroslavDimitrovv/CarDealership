@@ -1,21 +1,21 @@
-@page
+﻿@page
 @model LoginModel
 @{
-    ViewData["Title"] = "Р’С…РѕРґ";
+    ViewData["Title"] = "Вход";
 }
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-12 col-md-7 col-lg-5">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <h1 class="h3 mb-2">Р’С…РѕРґ</h1>
-                    <p class="text-muted mb-4">Р’Р»РµР· РІ РїСЂРѕС„РёР»Р° СЃРё, Р·Р° РґР° СЃР»РµРґРёС€ Р°РєС‚РёРІРЅРѕСЃС‚С‚Р° СЃРё.</p>
+                    <h1 class="h3 mb-2">Вход</h1>
+                    <p class="text-muted mb-4">Влез в профила си, за да следиш активността си.</p>
 
                     <form id="account" method="post" autocomplete="off">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
-                            <label asp-for="Input.Email" class="form-label">РРјРµР№Р»</label>
+                            <label asp-for="Input.Email" class="form-label">Имейл</label>
                             <input asp-for="Input.Email"
                                    class="form-control"
                                    autocomplete="off"
@@ -26,7 +26,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Input.Password" class="form-label">РџР°СЂРѕР»Р°</label>
+                            <label asp-for="Input.Password" class="form-label">Парола</label>
                             <input asp-for="Input.Password"
                                    class="form-control"
                                    autocomplete="off"
@@ -41,19 +41,19 @@
                                 <input class="form-check-input"
                                        asp-for="Input.RememberMe"
                                        autocomplete="off" />
-                                <label class="form-check-label" asp-for="Input.RememberMe">Р—Р°РїРѕРјРЅРё РјРµ</label>
+                                <label class="form-check-label" asp-for="Input.RememberMe">Запомни ме</label>
                             </div>
                         </div>
 
                         <button id="login-submit" type="submit" class="btn btn-primary w-100">
-                            Р’С…РѕРґ
+                            Вход
                         </button>
 
                         <hr class="my-4" />
 
                         <div class="d-flex justify-content-between">
                             <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none">
-                                РќСЏРјР°С€ Р°РєР°СѓРЅС‚? Р РµРіРёСЃС‚СЂР°С†РёСЏ
+                                Нямаш акаунт? Регистрация
                             </a>
                         </div>
                     </form>
@@ -61,14 +61,14 @@
                     @if ((Model.ExternalLogins?.Count ?? 0) > 0)
                     {
                         <hr class="my-4" />
-                        <p class="text-muted mb-2">Р’С…РѕРґ СЃ РґСЂСѓРі Р°РєР°СѓРЅС‚</p>
+                        <p class="text-muted mb-2">Вход с друг акаунт</p>
                         <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" autocomplete="off">
                             <div class="d-grid gap-2">
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
                                     <button type="submit" class="btn btn-outline-secondary"
                                             name="provider" value="@provider.Name"
-                                            title="Р’С…РѕРґ СЃ @provider.DisplayName">
+                                            title="Вход с @provider.DisplayName">
                                         @provider.DisplayName
                                     </button>
                                 }
