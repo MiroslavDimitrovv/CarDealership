@@ -1,4 +1,4 @@
-﻿using CarDealership.Models;
+﻿/* using CarDealership.Models;
 
 namespace CarDealership.Data
 {
@@ -149,3 +149,4 @@ new Car
         }
     }
 }
+*/
