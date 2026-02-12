@@ -136,6 +136,13 @@ new Car
 
 
             };
+            foreach (var car in db.Cars)
+            {
+                if (car.Type == Car.ListingType.ForRent)
+                    car.CurrentOffice = OfficeLocation.Ruse;
+            }
+
+            db.SaveChanges();
 
             db.Cars.AddRange(cars);
             db.SaveChanges();
