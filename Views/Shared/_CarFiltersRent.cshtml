@@ -6,6 +6,16 @@
         <label class="form-label">Търсене</label>
         <input class="form-control" name="Q" value="@Model.Q" placeholder="Марка, модел, двигател..." />
     </div>
+    <div class="col-12 col-md-3">
+        <label class="form-label">Офис</label>
+        <select class="form-select" name="Office">
+            <option value="">Всички</option>
+            <option value="Ruse" selected="@(Model.Office == CarDealership.Models.OfficeLocation.Ruse)">Офис Русе</option>
+            <option value="Burgas" selected="@(Model.Office == CarDealership.Models.OfficeLocation.Burgas)">Офис Бургас</option>
+            <option value="Sofia" selected="@(Model.Office == CarDealership.Models.OfficeLocation.Sofia)">Офис София</option>
+            <option value="Varna" selected="@(Model.Office == CarDealership.Models.OfficeLocation.Varna)">Офис Варна</option>
+        </select>
+    </div>
 
     <div>
         <label class="form-label">Марка</label>

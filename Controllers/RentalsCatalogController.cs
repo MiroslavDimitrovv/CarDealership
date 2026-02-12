@@ -37,6 +37,9 @@ namespace CarDealership.Controllers
 
             var q = baseQuery;
 
+            if (filter.Office.HasValue)
+                q = q.Where(c => c.CurrentOffice == filter.Office.Value);
+
             if (!string.IsNullOrWhiteSpace(filter.Q))
             {
                 var term = filter.Q.Trim();
@@ -158,6 +161,21 @@ namespace CarDealership.Controllers
             if (overlap)
             {
                 TempData["Error"] = "Автомобилът е зает за избрания период.";
+                return RedirectToAction(nameof(Details), new { id = carId });
+            }
+
+            var prevRental = await _db.Rentals.AsNoTracking()
+                .Where(r => r.CarId == carId
+                    && r.Status != Rental.RentalStatus.Cancelled
+                    && r.EndDate < start)
+                .OrderByDescending(r => r.EndDate)
+                .FirstOrDefaultAsync();
+
+            var expectedOffice = prevRental != null ? prevRental.ReturnOffice : car.CurrentOffice;
+
+            if (pickupOffice != expectedOffice)
+            {
+                TempData["Error"] = $"Колата ще бъде в {expectedOffice} към началната дата. Избери правилния офис за вземане.";
                 return RedirectToAction(nameof(Details), new { id = carId });
             }
 

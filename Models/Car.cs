@@ -63,6 +63,7 @@ namespace CarDealership.Models
         [Required]
         [Display(Name = "Тип обява")]
         public ListingType Type { get; set; }
+        public OfficeLocation CurrentOffice { get; set; }
 
         [Range(1, 1000000)]
         [Display(Name = "Цена за продажба")]

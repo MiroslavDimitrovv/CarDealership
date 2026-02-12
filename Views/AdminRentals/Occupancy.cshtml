@@ -175,14 +175,59 @@
 
                                                 @if (isCash && !r.IsPaid)
                                                 {
-                                                    <form method="post" asp-controller="AdminRentals" asp-action="MarkPaid" class="d-inline">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="rentalId" value="@r.Id" />
-                                                        <button type="submit" class="btn btn-sm btn-outline-success">
-                                                            Маркирай платено
-                                                        </button>
-                                                    </form>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-success"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#markPaidModal-@r.Id">
+                                                        Маркирай платено
+                                                    </button>
+
+                                                    <div class="modal fade" id="markPaidModal-@r.Id" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title">Потвърждение за плащане</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+
+                                                                <div class="modal-body">
+                                                                    <p class="mb-2">
+                                                                        Сигурни ли сте, че искате да маркирате като <strong>ПЛАТЕН</strong> този наем?
+                                                                    </p>
+
+                                                                    <ul class="small mb-0">
+                                                                        <li>Автомобил: <strong>@car.Brand @car.Model</strong></li>
+                                                                        <li>Период: <strong>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</strong></li>
+                                                                        <li>Офиси: <strong>@BgOffice(r.PickupOffice)</strong> → <strong>@BgOffice(r.ReturnOffice)</strong></li>
+                                                                        <li>Клиент: <strong>@r.Client?.FullName</strong></li>
+                                                                        <li>Телефон: <strong>@r.Client?.PhoneNumber</strong></li>
+                                                                    </ul>
+
+                                                                    <div class="alert alert-warning mt-3 mb-0 small">
+                                                                        Това действие променя статуса на плащането и не може да се върне автоматично.
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отказ</button>
+
+                                                                    <form method="post"
+                                                                          asp-controller="AdminRentals"
+                                                                          asp-action="MarkPaid"
+                                                                          class="d-inline">
+                                                                        @Html.AntiForgeryToken()
+                                                                        <input type="hidden" name="rentalId" value="@r.Id" />
+                                                                        <button type="submit" class="btn btn-success">
+                                                                            Да, маркирай платено
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 }
+
+
 
                                                 <form method="post"
                                                       asp-controller="AdminRentals"
@@ -244,5 +289,24 @@
                 }
             </tbody>
         </table>
+        @section Scripts {
+            <script>
+                (function () {
+                    document.addEventListener('submit', function (e) {
+                        const form = e.target;
+                        if (!form) return;
+
+                        if (form.getAttribute('action') && form.getAttribute('action').toLowerCase().includes('markpaid')) {
+                            const btn = form.querySelector('button[type="submit"]');
+                            if (btn) {
+                                btn.disabled = true;
+                                btn.textContent = 'Запис...';
+                            }
+                        }
+                    });
+                })();
+            </script>
+        }
+
     </div>
 </div>

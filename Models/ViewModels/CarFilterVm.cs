@@ -19,6 +19,8 @@
         public decimal? PriceFrom { get; set; }
         public decimal? PriceTo { get; set; }
 
+        public OfficeLocation? Office { get; set; }
+
         public List<string> Brands { get; set; } = new();
         public List<string> FuelTypes { get; set; } = new();
         public List<string> Transmissions { get; set; } = new();

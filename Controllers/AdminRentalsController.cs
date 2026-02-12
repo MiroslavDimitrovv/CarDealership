@@ -97,10 +97,13 @@ namespace CarDealership.Controllers
             //     rental.PaidAt = DateTime.UtcNow;
             // }
 
-            rental.Status = Rental.RentalStatus.ReleasedByOperator; // или Completed, избери 1
+            rental.Status = Rental.RentalStatus.ReleasedByOperator;
 
             if (rental.Car != null)
-                rental.Car.Status = Car.StatusType.Available; // ✅ връщаме колата като свободна
+            { rental.Car.CurrentOffice = rental.ReturnOffice;
+                rental.Car.Status = Car.StatusType.Available;
+            }
+              
 
             await _db.SaveChangesAsync();
 

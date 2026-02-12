@@ -80,6 +80,15 @@
             <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<CarDealership.Models.Car.StatusType>()"></select>
             <span asp-validation-for="Status" class="text-danger"></span>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Офис (локация на колата)</label>
+            <select asp-for="CurrentOffice" class="form-select">
+                <option value="Ruse">Офис Русе</option>
+                <option value="Burgas">Офис Бургас</option>
+                <option value="Sofia">Офис София</option>
+                <option value="Varna">Офис Варна</option>
+            </select>
+        </div>
 
         <div class="col-12">
             <label class="form-label">Описание</label>

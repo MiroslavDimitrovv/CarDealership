@@ -6,5 +6,7 @@ namespace CarDealership.Models.ViewModels
     {
         public CarFilterVm Filter { get; set; } = new();
         public List<Car> Cars { get; set; } = new();
+        public OfficeLocation? Office { get; set; }
+
     }
 }
