@@ -1,16 +1,25 @@
 ﻿@model IEnumerable<CarDealership.Models.Car>
+@using CarDealership.Models
+
 @{
     ViewData["Title"] = "Админ панел - Коли";
 
-    // стойности от query string за филтри
     var q = Context.Request.Query["q"].ToString();
     var type = Context.Request.Query["type"].ToString();
     var status = Context.Request.Query["status"].ToString();
+
+    string BgOffice(OfficeLocation o) => o switch
+    {
+        OfficeLocation.Ruse => "Офис Русе",
+        OfficeLocation.Burgas => "Офис Бургас",
+        OfficeLocation.Sofia => "Офис София",
+        OfficeLocation.Varna => "Офис Варна",
+        _ => o.ToString()
+    };
 }
 
 <div class="container py-4">
 
-    <!-- TOP ADMIN MENU -->
     <div class="mb-3">
         <ul class="nav nav-pills flex-wrap gap-2">
             <li class="nav-item">
@@ -39,6 +48,7 @@
     <form method="get" class="card shadow-sm mb-3">
         <div class="card-body">
             <div class="row g-2 align-items-end">
+
                 <div class="col-12 col-md-6">
                     <label class="form-label">Търсене</label>
                     <input name="q" value="@q" class="form-control"
@@ -67,11 +77,11 @@
 
                 <div class="col-12 d-flex gap-2">
                     <button class="btn btn-outline-primary" type="submit">Филтрирай</button>
-                    <a class="btn btn-outline-secondary"
-                       asp-controller="AdminCars" asp-action="Index">
+                    <a class="btn btn-outline-secondary" asp-controller="AdminCars" asp-action="Index">
                         Изчисти
                     </a>
                 </div>
+
             </div>
         </div>
     </form>
@@ -84,10 +94,12 @@
                     <th>Марка / Модел</th>
                     <th>Тип</th>
                     <th>Статус</th>
+                    <th>Офис</th>
                     <th>Цена</th>
                     <th></th>
                 </tr>
             </thead>
+
             <tbody>
                 @foreach (var c in Model)
                 {
@@ -96,14 +108,23 @@
                             <img src="~/images/cars/@(c.ImageFileName ?? "placeholder.jpg")"
                                  style="width:96px;height:64px;object-fit:cover;border-radius:8px" />
                         </td>
+
                         <td>
                             <div class="fw-semibold">@c.Brand @c.Model</div>
                             <div class="text-muted small">@c.Year • @c.Mileage km • @c.FuelType</div>
                         </td>
+
                         <td>@c.Type</td>
                         <td>@c.Status</td>
+
                         <td>
-                            @if (c.Type == CarDealership.Models.Car.ListingType.ForSale)
+                            <span class="badge bg-info text-dark">
+                                @BgOffice(c.CurrentOffice)
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (c.Type == Car.ListingType.ForSale)
                             {
                                 <span>@(c.SalePrice?.ToString("0") ?? "-") €</span>
                             }
@@ -112,6 +133,7 @@
                                 <span>@(c.RentPricePerDay?.ToString("0") ?? "-") € / ден</span>
                             }
                         </td>
+
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@c.Id">Редакция</a>
                             <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@c.Id">Изтрий</a>
@@ -121,4 +143,5 @@
             </tbody>
         </table>
     </div>
+
 </div>

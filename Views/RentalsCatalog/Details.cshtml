@@ -2,6 +2,7 @@
 @using CarDealership.Data
 @using CarDealership.Models
 @using Microsoft.AspNetCore.Identity
+@using System.Text.Json
 @inject ApplicationDbContext Db
 @inject UserManager<ApplicationUser> UserManager
 
@@ -253,9 +254,11 @@
                         const returnOffice = document.getElementById("returnOffice");
                         const errorBox = document.getElementById("rentClientError");
 
-                            pickupOffice.value = "@Model.CurrentOffice";
+                            const currentOffice = @Html.Raw(JsonSerializer.Serialize(Model.CurrentOffice.ToString()));
+
+                            pickupOffice.value = currentOffice;
                             pickupOffice.disabled = true;
-                            pickupOfficeHidden.value = "@Model.CurrentOffice";
+                            pickupOfficeHidden.value = currentOffice;
 
                             function parseDate(v) {
                                 const d = new Date(v + "T00:00:00");
@@ -295,8 +298,10 @@
 
                                 document.getElementById("confirmStart").textContent = startInput.value;
                                 document.getElementById("confirmEnd").textContent = endInput.value;
-                                document.getElementById("confirmPickup").textContent = pickupOffice.options[pickupOffice.selectedIndex].text;
-                                document.getElementById("confirmReturn").textContent = returnOffice.options[returnOffice.selectedIndex].text;
+                                document.getElementById("confirmPickup").textContent =
+                                    pickupOffice.options[pickupOffice.selectedIndex].text;
+                                document.getElementById("confirmReturn").textContent =
+                                    returnOffice.options[returnOffice.selectedIndex].text;
                                 document.getElementById("confirmTotal").textContent = total.toFixed(2) + " €";
 
                                 new bootstrap.Modal(rentConfirmModal).show();
