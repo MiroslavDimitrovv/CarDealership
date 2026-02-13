@@ -18,12 +18,10 @@ namespace CarDealership.Controllers
             _env = env;
         }
 
-        // ✅ Index с филтри: q (търсене), type (ForSale/ForRent), status (Available/Rented/Sold/Unavailable)
         public async Task<IActionResult> Index(string? q, string? type, string? status)
         {
             var carsQuery = _db.Cars.AsNoTracking().AsQueryable();
 
-            // Search
             if (!string.IsNullOrWhiteSpace(q))
             {
                 q = q.Trim();
@@ -39,14 +37,12 @@ namespace CarDealership.Controllers
                 );
             }
 
-            // Filter by type (enum parse)
             if (!string.IsNullOrWhiteSpace(type) &&
                 Enum.TryParse<Car.ListingType>(type, ignoreCase: true, out var listingType))
             {
                 carsQuery = carsQuery.Where(c => c.Type == listingType);
             }
 
-            // Filter by status (enum parse)
             if (!string.IsNullOrWhiteSpace(status) &&
                 Enum.TryParse<Car.StatusType>(status, ignoreCase: true, out var st))
             {
@@ -64,6 +60,7 @@ namespace CarDealership.Controllers
         {
             var car = await _db.Cars.FindAsync(id);
             if (car == null) return NotFound();
+
             return View(car);
         }
 
@@ -79,7 +76,6 @@ namespace CarDealership.Controllers
             var dbCar = await _db.Cars.FirstOrDefaultAsync(c => c.Id == id);
             if (dbCar == null) return NotFound();
 
-            // Update fields
             dbCar.Brand = car.Brand;
             dbCar.Model = car.Model;
             dbCar.Year = car.Year;
@@ -94,7 +90,8 @@ namespace CarDealership.Controllers
             dbCar.RentPricePerDay = car.RentPricePerDay;
             dbCar.Status = car.Status;
 
-            // Upload new image (optional)
+            dbCar.CurrentOffice = car.CurrentOffice;
+
             if (image != null && image.Length > 0)
             {
                 DeleteImageIfNotPlaceholder(dbCar.ImageFileName);
@@ -107,7 +104,11 @@ namespace CarDealership.Controllers
 
         public IActionResult Create()
         {
-            return View(new Car { Status = Car.StatusType.Available });
+            return View(new Car
+            {
+                Status = Car.StatusType.Available,
+                CurrentOffice = OfficeLocation.Ruse 
+            });
         }
 
         [HttpPost]
@@ -116,6 +117,10 @@ namespace CarDealership.Controllers
         {
             if (!ModelState.IsValid)
                 return View(car);
+
+      
+            if (!Enum.IsDefined(typeof(OfficeLocation), car.CurrentOffice))
+                car.CurrentOffice = OfficeLocation.Ruse;
 
             if (image != null && image.Length > 0)
                 car.ImageFileName = await SaveImageAsync(image);
