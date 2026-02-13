@@ -18,7 +18,7 @@ namespace CarDealership.Controllers
             _env = env;
         }
 
-        public async Task<IActionResult> Index(string? q, string? type, string? status)
+        public async Task<IActionResult> Index(string? q, string? type, string? status, string? office)
         {
             var carsQuery = _db.Cars.AsNoTracking().AsQueryable();
 
@@ -47,6 +47,12 @@ namespace CarDealership.Controllers
                 Enum.TryParse<Car.StatusType>(status, ignoreCase: true, out var st))
             {
                 carsQuery = carsQuery.Where(c => c.Status == st);
+            }
+
+            if (!string.IsNullOrWhiteSpace(office) &&
+                Enum.TryParse<OfficeLocation>(office, ignoreCase: true, out var off))
+            {
+                carsQuery = carsQuery.Where(c => c.CurrentOffice == off);
             }
 
             var cars = await carsQuery
@@ -107,7 +113,7 @@ namespace CarDealership.Controllers
             return View(new Car
             {
                 Status = Car.StatusType.Available,
-                CurrentOffice = OfficeLocation.Ruse 
+                CurrentOffice = OfficeLocation.Ruse
             });
         }
 
@@ -118,7 +124,6 @@ namespace CarDealership.Controllers
             if (!ModelState.IsValid)
                 return View(car);
 
-      
             if (!Enum.IsDefined(typeof(OfficeLocation), car.CurrentOffice))
                 car.CurrentOffice = OfficeLocation.Ruse;
 
