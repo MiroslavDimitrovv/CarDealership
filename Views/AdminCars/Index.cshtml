@@ -7,6 +7,7 @@
     var q = Context.Request.Query["q"].ToString();
     var type = Context.Request.Query["type"].ToString();
     var status = Context.Request.Query["status"].ToString();
+    var office = Context.Request.Query["office"].ToString(); 
 
     string BgOffice(OfficeLocation o) => o switch
     {
@@ -55,7 +56,7 @@
                            placeholder="Марка, модел, година, гориво..." />
                 </div>
 
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Тип</label>
                     <select name="type" class="form-select">
                         <option value="" selected="@(string.IsNullOrEmpty(type))">Всички</option>
@@ -64,7 +65,7 @@
                     </select>
                 </div>
 
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-2">
                     <label class="form-label">Статус</label>
                     <select name="status" class="form-select">
                         <option value="" selected="@(string.IsNullOrEmpty(status))">Всички</option>
@@ -72,6 +73,17 @@
                         <option value="Rented" selected="@(status == "Rented")">Rented</option>
                         <option value="Sold" selected="@(status == "Sold")">Sold</option>
                         <option value="Unavailable" selected="@(status == "Unavailable")">Unavailable</option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-2">
+                    <label class="form-label">Офис</label>
+                    <select name="office" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(office))">Всички</option>
+                        <option value="Ruse" selected="@(office == "Ruse")">Офис Русе</option>
+                        <option value="Burgas" selected="@(office == "Burgas")">Офис Бургас</option>
+                        <option value="Sofia" selected="@(office == "Sofia")">Офис София</option>
+                        <option value="Varna" selected="@(office == "Varna")">Офис Варна</option>
                     </select>
                 </div>
 
