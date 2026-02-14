@@ -4,13 +4,22 @@
 @{
     ViewData["Title"] = "Моите наеми";
 
-    string BgOffice(OfficeLocation o) => o switch
+    string BgOfficeName(OfficeLocation o) => o switch
     {
         OfficeLocation.Ruse => "Офис Русе",
         OfficeLocation.Burgas => "Офис Бургас",
         OfficeLocation.Sofia => "Офис София",
         OfficeLocation.Varna => "Офис Варна",
         _ => o.ToString()
+    };
+
+    string BgOfficeAddress(OfficeLocation o) => o switch
+    {
+        OfficeLocation.Ruse => "Ул. Свобода 6",
+        OfficeLocation.Burgas => "Ул. Александровска 26",
+        OfficeLocation.Sofia => "Ул. Московска 33",
+        OfficeLocation.Varna => "бул. Осми Приморски полк 43",
+        _ => ""
     };
 }
 
@@ -51,6 +60,9 @@ else
                 {
                     var isPaid = r.IsPaid;
 
+                    var pickId = $"pickAddr-{r.Id}";
+                    var retId = $"retAddr-{r.Id}";
+
                     <tr>
                         <td>
                             <div class="fw-semibold">@r.Car?.Brand @r.Car?.Model</div>
@@ -58,8 +70,40 @@ else
                         </td>
 
                         <td>@r.StartDate.ToString("dd.MM.yyyy") – @r.EndDate.ToString("dd.MM.yyyy")</td>
-                        <td>@BgOffice(r.PickupOffice)</td>
-                        <td>@BgOffice(r.ReturnOffice)</td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn btn-link p-0 text-decoration-none"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#@pickId"
+                                    aria-expanded="false"
+                                    aria-controls="@pickId">
+                                @BgOfficeName(r.PickupOffice)
+                            </button>
+
+                            <div id="@pickId" class="collapse">
+                                <div class="small text-muted mt-1">
+                                    @BgOfficeAddress(r.PickupOffice)
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn btn-link p-0 text-decoration-none"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#@retId"
+                                    aria-expanded="false"
+                                    aria-controls="@retId">
+                                @BgOfficeName(r.ReturnOffice)
+                            </button>
+
+                            <div id="@retId" class="collapse">
+                                <div class="small text-muted mt-1">
+                                    @BgOfficeAddress(r.ReturnOffice)
+                                </div>
+                            </div>
+                        </td>
 
                         <td>@r.Days</td>
                         <td>@r.TotalPrice €</td>
