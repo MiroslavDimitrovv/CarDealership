@@ -22,7 +22,6 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddErrorDescriber<CarDealership.Services.BulgarianIdentityErrorDescriber>()
 .AddDefaultTokenProviders();
 
 builder.Services.AddHttpClient<AutoDevCarValuationService>();
@@ -43,8 +42,6 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
-
-   // DbSeeder.Seed(db);
 
     IdentitySeeder.SeedRolesAndAdminAsync(scope.ServiceProvider)
         .GetAwaiter().GetResult();

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿/* using Microsoft.AspNetCore.Identity;
 //FIX
 namespace CarDealership.Services
 {
@@ -46,4 +46,4 @@ namespace CarDealership.Services
                 Description = $"Имейл адресът „{email}“ вече е регистриран."
             };
     }
-}
+} */
