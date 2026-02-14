@@ -29,6 +29,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddHttpClient<AutoDevCarValuationService>();
 builder.Services.AddScoped<ICarValuationService, AutoDevCarValuationService>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CarDealership.Services.AdminEvents.IAdminEventLogger, CarDealership.Services.AdminEvents.AdminEventLogger>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -45,8 +48,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 
-    IdentitySeeder.SeedRolesAndAdminAsync(scope.ServiceProvider)
-        .GetAwaiter().GetResult();
+   /* IdentitySeeder.SeedRolesAndAdminAsync(scope.ServiceProvider)
+        .GetAwaiter().GetResult(); */
 }
 
 if (!app.Environment.IsDevelopment())

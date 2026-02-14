@@ -1,9 +1,11 @@
 ﻿using CarDealership.Data;
 using CarDealership.Models;
 using CarDealership.Models.ViewModels;
+using CarDealership.Services.AdminEvents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace CarDealership.Controllers
@@ -11,10 +13,12 @@ namespace CarDealership.Controllers
     public class RentalsCatalogController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IAdminEventLogger _events;
 
-        public RentalsCatalogController(ApplicationDbContext db)
+        public RentalsCatalogController(ApplicationDbContext db, IAdminEventLogger events)
         {
             _db = db;
+            _events = events;
         }
 
         [HttpGet]
@@ -220,6 +224,17 @@ namespace CarDealership.Controllers
 
             _db.Rentals.Add(rental);
             await _db.SaveChangesAsync();
+
+            await _events.LogAsync(
+    type: "RentalCreated",
+    title: "Създаден наем",
+    details: $"CarId={car.Id}, {start:yyyy-MM-dd} до {end:yyyy-MM-dd}, Pickup={pickupOffice}, Return={returnOffice}, Total={rental.TotalPrice}€, Pay={pm}, Paid={rental.IsPaid}",
+    targetUserId: userId,
+    targetEmail: client.Email,
+    carId: car.Id,
+    rentalId: rental.Id
+);
+
 
             TempData["Success"] =
                 $"Наемът е създаден успешно. Общо: {rental.TotalPrice} €. " +

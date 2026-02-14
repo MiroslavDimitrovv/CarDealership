@@ -16,6 +16,7 @@ namespace CarDealership.Data
         public DbSet<Rental> Rentals => Set<Rental>();
         public DbSet<Sale> Sales => Set<Sale>();
         public DbSet<Favorite> Favorites => Set<Favorite>();
+        public DbSet<CarDealership.Models.AdminEvent> AdminEvents { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

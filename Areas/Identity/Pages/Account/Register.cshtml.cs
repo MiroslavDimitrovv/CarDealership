@@ -1,5 +1,6 @@
 using CarDealership.Data;
 using CarDealership.Models;
+using CarDealership.Services.AdminEvents;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -12,15 +13,18 @@ namespace CarDealership.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly IAdminEventLogger _events;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IAdminEventLogger events)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _events = events;
         }
 
         [BindProperty]
@@ -96,6 +100,14 @@ namespace CarDealership.Areas.Identity.Pages.Account
 
             _context.Clients.Add(client);
             await _context.SaveChangesAsync();
+
+            await _events.LogAsync(
+                type: "AccountCreated",
+                title: "Създаден акаунт",
+                details: $"Име: {client.FirstName} {client.LastName}, Тел: {client.PhoneNumber}",
+                targetUserId: user.Id,
+                targetEmail: user.Email
+            );
 
             await _signInManager.SignInAsync(user, isPersistent: false);
             return LocalRedirect(returnUrl);

@@ -1,5 +1,6 @@
 ﻿using CarDealership.Data;
 using CarDealership.Models;
+using CarDealership.Services.AdminEvents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,12 @@ namespace CarDealership.Controllers
     public class RentalsController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IAdminEventLogger _events;
 
-        public RentalsController(ApplicationDbContext db)
+        public RentalsController(ApplicationDbContext db, IAdminEventLogger events)
         {
             _db = db;
+            _events = events;
         }
 
         public async Task<IActionResult> My()
@@ -51,6 +54,16 @@ namespace CarDealership.Controllers
 
             rental.Status = Rental.RentalStatus.Cancelled;
             await _db.SaveChangesAsync();
+
+            await _events.LogAsync(
+    "RentalCancelled",
+    "Отказан наем",
+    $"RentalId={rental.Id}",
+    targetUserId: userId,
+    carId: rental.CarId,
+    rentalId: rental.Id
+);
+
 
             TempData["Success"] = "Наемът беше отменен.";
             return RedirectToAction(nameof(My));

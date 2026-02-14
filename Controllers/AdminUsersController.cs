@@ -1,6 +1,7 @@
 ﻿using CarDealership.Data;
 using CarDealership.Models;
 using CarDealership.Models.ViewModels;
+using CarDealership.Services.AdminEvents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,13 @@ namespace CarDealership.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAdminEventLogger _events;
 
-        public AdminUsersController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+        public AdminUsersController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IAdminEventLogger events)
         {
             _db = db;
             _userManager = userManager;
+            _events = events;
         }
 
         [HttpGet]
@@ -183,6 +186,7 @@ namespace CarDealership.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string userId)
         {
+
             var me = _userManager.GetUserId(User);
             if (me == userId)
             {
@@ -192,6 +196,15 @@ namespace CarDealership.Controllers
 
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return NotFound();
+
+            await _events.LogAsync(
+    "UserDeleted",
+    "Изтрит потребител",
+    $"Deleted userId={userId}",
+    targetUserId: userId,
+    targetEmail: user.Email
+);
+
 
             var rentals = await _db.Rentals.Where(r => r.UserId == userId).ToListAsync();
             _db.Rentals.RemoveRange(rentals);

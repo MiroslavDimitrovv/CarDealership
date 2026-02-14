@@ -1,5 +1,6 @@
 ﻿using CarDealership.Data;
 using CarDealership.Models;
+using CarDealership.Services.AdminEvents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +11,12 @@ namespace CarDealership.Controllers
     public class AdminRentalsController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IAdminEventLogger _events;
 
-        public AdminRentalsController(ApplicationDbContext db)
+        public AdminRentalsController(ApplicationDbContext db, IAdminEventLogger events)
         {
             _db = db;
+            _events = events;
         }
 
         public async Task<IActionResult> Occupancy()
@@ -32,38 +35,30 @@ namespace CarDealership.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateOffices(int rentalId, OfficeLocation pickupOffice, OfficeLocation returnOffice)
+        public async Task<IActionResult> MarkPaid(int rentalId)
         {
-            var rental = await _db.Rentals.FirstOrDefaultAsync(r => r.Id == rentalId);
-            if (rental == null)
-                return NotFound();
+            var rental = await _db.Rentals
+                .Include(r => r.Client)
+                .Include(r => r.Car)
+                .FirstOrDefaultAsync(r => r.Id == rentalId);
+
+            if (rental == null) return NotFound();
 
             if (rental.Status != Rental.RentalStatus.Active)
             {
-                TempData["Error"] = "Може да променяш офисите само на активен наем.";
+                TempData["Error"] = "Може да маркираш платено само за активен наем.";
                 return RedirectToAction(nameof(Occupancy));
             }
 
-            rental.PickupOffice = pickupOffice;
-            rental.ReturnOffice = returnOffice;
-
-            await _db.SaveChangesAsync();
-
-            TempData["Success"] = "Офисите са обновени.";
-            return RedirectToAction(nameof(Occupancy));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkPaid(int rentalId)
-        {
-            var rental = await _db.Rentals.FirstOrDefaultAsync(r => r.Id == rentalId);
-            if (rental == null)
-                return NotFound();
-
-            if (rental.Status != Rental.RentalStatus.Active)
+            if (rental.PayMethod != Rental.PaymentMethod.CashOnPickup)
             {
-                TempData["Error"] = "Може да маркираш платено само активен наем.";
+                TempData["Error"] = "Този наем не е 'в брой'.";
+                return RedirectToAction(nameof(Occupancy));
+            }
+
+            if (rental.IsPaid)
+            {
+                TempData["Success"] = "Наемът вече е маркиран като платен.";
                 return RedirectToAction(nameof(Occupancy));
             }
 
@@ -72,7 +67,17 @@ namespace CarDealership.Controllers
 
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Наемът е маркиран като платен.";
+            await _events.LogAsync(
+                type: "PaymentMarkedPaid",
+                title: "Маркирано плащане като платено",
+                details: $"Наем #{rental.Id}, Кола: {rental.Car?.Brand} {rental.Car?.Model}, Сума: {rental.TotalPrice}€",
+                targetUserId: rental.UserId,
+                targetEmail: rental.Client?.Email,
+                carId: rental.CarId,
+                rentalId: rental.Id
+            );
+
+            TempData["Success"] = "Плащането беше маркирано като платено.";
             return RedirectToAction(nameof(Occupancy));
         }
 
@@ -82,6 +87,7 @@ namespace CarDealership.Controllers
         {
             var rental = await _db.Rentals
                 .Include(r => r.Car)
+                .Include(r => r.Client)
                 .FirstOrDefaultAsync(r => r.Id == rentalId);
 
             if (rental == null)
@@ -90,22 +96,22 @@ namespace CarDealership.Controllers
             if (rental.Status != Rental.RentalStatus.Active)
                 return RedirectToAction(nameof(Occupancy));
 
-       
-            // if (rental.PayMethod == Rental.PaymentMethod.CashOnPickup && !rental.IsPaid)
-            // {
-            //     rental.IsPaid = true;
-            //     rental.PaidAt = DateTime.UtcNow;
-            // }
-
-            rental.Status = Rental.RentalStatus.ReleasedByOperator;
+            rental.Status = Rental.RentalStatus.Completed;
 
             if (rental.Car != null)
-            { rental.Car.CurrentOffice = rental.ReturnOffice;
-                rental.Car.Status = Car.StatusType.Available;
-            }
-              
+                rental.Car.CurrentOffice = rental.ReturnOffice;
 
             await _db.SaveChangesAsync();
+
+            await _events.LogAsync(
+                type: "RentalReleased",
+                title: "Освободен автомобил (приключен наем)",
+                details: $"Наем #{rental.Id}, КолаId={rental.CarId}, Нов офис: {rental.ReturnOffice}",
+                targetUserId: rental.UserId,
+                targetEmail: rental.Client?.Email,
+                carId: rental.CarId,
+                rentalId: rental.Id
+            );
 
             TempData["Success"] = "Автомобилът беше освободен успешно.";
             return RedirectToAction(nameof(Occupancy));
