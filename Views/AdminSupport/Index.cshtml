@@ -1,0 +1,88 @@
+﻿@using CarDealership.Models
+@{
+    ViewData["Title"] = "Тикети – Админ";
+    var q = (string)(ViewBag.Q ?? "");
+    TicketStatus? status = ViewBag.Status as TicketStatus?;
+    var rows = Model as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 m-0">Тикети (Помощ)</h1>
+
+        <a class="btn btn-outline-secondary"
+           asp-controller="AdminCars"
+           asp-action="Index">
+            ← Назад към Админ Панела
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form method="get" class="row g-2 align-items-end mb-3">
+        <div class="col-12 col-md-6">
+            <label class="form-label">Търсене</label>
+            <input class="form-control" name="q" value="@q" placeholder="тема, email, име, телефон..." />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Статус</label>
+            <select class="form-select" name="status">
+                <option value="">Всички</option>
+                <option value="Open" selected="@(status == TicketStatus.Open)">Open</option>
+                <option value="InProgress" selected="@(status == TicketStatus.InProgress)">InProgress</option>
+                <option value="Closed" selected="@(status == TicketStatus.Closed)">Closed</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button class="btn btn-primary w-100" type="submit">Търси</button>
+            <a class="btn btn-outline-secondary w-100" asp-action="Index">Изчисти</a>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:90px">#</th>
+                    <th style="width:170px">Дата</th>
+                    <th>Тема</th>
+                    <th style="width:160px">Потребител</th>
+                    <th style="width:120px">Статус</th>
+                    <th style="width:120px">Приоритет</th>
+                    <th style="width:120px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in rows)
+                {
+                    <tr>
+                        <td class="fw-semibold">@r.Id</td>
+                        <td>@((DateTime)r.CreatedAt).ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            <div class="fw-semibold">@r.Subject</div>
+                            <div class="text-muted small">@r.Category</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">@r.Email</div>
+                            <div class="text-muted small">@((string?)r.FullName ?? "(без име)")</div>
+                            <div class="text-muted small">@((string?)r.Phone ?? "(няма телефон)")</div>
+                        </td>
+                        <td>@r.Status</td>
+                        <td>@r.Priority</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-action="Details" asp-route-id="@r.Id">
+                                Детайли
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

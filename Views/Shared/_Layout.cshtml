@@ -128,8 +128,20 @@
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CarLand - Проект от Мирослав Димитров, Христомир Христов и Добрин Панев
+    </footer>
+    <footer class="border-top footer text-muted">
+        <div class="container py-3 d-flex align-items-center">
+            <div>
+                &copy; @DateTime.Now.Year - &copy; 2026 - CarLand - Проект от Мирослав Димитров, Христомир Христов и Добрин Панев
+            </div>
+
+            <div class="ms-auto">
+                <a class="btn btn-sm btn-outline-secondary"
+                   asp-controller="Support"
+                   asp-action="Create">
+                    Помощ
+                </a>
+            </div>
         </div>
     </footer>
 

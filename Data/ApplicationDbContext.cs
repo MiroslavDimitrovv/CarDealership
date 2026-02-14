@@ -17,6 +17,9 @@ namespace CarDealership.Data
         public DbSet<Sale> Sales => Set<Sale>();
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<CarDealership.Models.AdminEvent> AdminEvents { get; set; } = default!;
+        public DbSet<CarDealership.Models.SupportTicket> SupportTickets { get; set; } = default!;
+        public DbSet<CarDealership.Models.SupportTicketMessage> SupportTicketMessages { get; set; } = default!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
