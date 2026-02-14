@@ -8,7 +8,7 @@
         <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)"
            id="profile"
            asp-page="./Index">
-            Профил
+            Profile
         </a>
     </li>
 
@@ -16,26 +16,14 @@
         <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)"
            id="change-password"
            asp-page="./ChangePassword">
-            Парола
+            Password
         </a>
     </li>
-
-    @if (hasExternalLogins)
-    {
-        <li class="nav-item" id="external-logins">
-            <a class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
-               id="external-login"
-               asp-page="./ExternalLogins">
-                Външни входове
-            </a>
-        </li>
-    }
-
     <li class="nav-item">
         <a class="nav-link"
            id="my-rentals"
            href="/Rentals/My">
-            Наеми
+            Rents
         </a>
     </li>
 </ul>
