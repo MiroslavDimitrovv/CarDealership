@@ -1,0 +1,57 @@
+﻿@model CarDealership.Models.ViewModels.AdminUserEditVm
+
+@{
+    ViewData["Title"] = "Редакция на потребител";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 m-0">Редакция на потребител</h1>
+
+        <a class="btn btn-outline-secondary" asp-action="Index">← Назад</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="ClientId" />
+
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Имейл</label>
+                    <input class="form-control" asp-for="Email" />
+                    <span class="text-danger small" asp-validation-for="Email"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Телефон</label>
+                    <input class="form-control" asp-for="PhoneNumber" />
+                    <span class="text-danger small" asp-validation-for="PhoneNumber"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Име</label>
+                    <input class="form-control" asp-for="FirstName" />
+                    <span class="text-danger small" asp-validation-for="FirstName"></span>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Фамилия</label>
+                    <input class="form-control" asp-for="LastName" />
+                    <span class="text-danger small" asp-validation-for="LastName"></span>
+                </div>
+
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit">Запази</button>
+                    <a class="btn btn-outline-secondary" asp-action="Index">Отказ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
