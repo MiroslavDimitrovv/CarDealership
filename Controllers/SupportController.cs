@@ -93,5 +93,72 @@ namespace CarDealership.Controllers
 
             return View(rows);
         }
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+                return Challenge();
+
+            var ticket = await _db.SupportTickets.AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+
+            if (ticket == null) return NotFound();
+
+            var msgs = await _db.SupportTicketMessages.AsNoTracking()
+                .Where(m => m.TicketId == id)
+                .OrderBy(m => m.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.Messages = msgs;
+
+            return View(ticket);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reply(int id, string message)
+        {
+            message = (message ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                TempData["Error"] = "Съобщението не може да е празно.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+                return Challenge();
+
+            var ticket = await _db.SupportTickets.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+            if (ticket == null) return NotFound();
+
+            if (ticket.Status == TicketStatus.Closed)
+            {
+                TempData["Error"] = "Този тикет е затворен и не може да се отговаря.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var msg = new SupportTicketMessage
+            {
+                TicketId = id,
+                AuthorUserId = userId,
+                IsAdmin = false,
+                Message = message,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _db.SupportTicketMessages.Add(msg);
+
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("SupportTicket USER_REPLY: TicketId={TicketId} UserId={UserId} At={AtUtc} MsgLen={Len}",
+                id, userId, msg.CreatedAt, msg.Message.Length);
+
+            TempData["Success"] = "Съобщението е изпратено.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
     }
 }

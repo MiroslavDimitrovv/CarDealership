@@ -43,7 +43,12 @@
                         <tr>
                             <td class="fw-semibold">@t.Id</td>
                             <td>@t.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                            <td>@t.Subject</td>
+                            <td>
+                                <a asp-controller="Support" asp-action="Details" asp-route-id="@t.Id">
+                                    @t.Subject
+                                </a>
+                            </td>
+
                             <td>@t.Category</td>
                             <td>@t.Priority</td>
                             <td>
