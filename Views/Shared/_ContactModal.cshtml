@@ -8,10 +8,11 @@
 
             <div class="modal-body">
                 <div class="d-flex align-items-start gap-3">
-                 
                     <div>
                         <div class="fw-semibold mb-1" id="contactModalTitle">Информация</div>
+
                         <div class="text-muted" id="contactModalText">
+                            Заповядайте в нашия шоурум и се уверете
                         </div>
 
                         <hr class="my-3" />
@@ -42,8 +43,13 @@
         const btn = e.target.closest("[data-contact-message]");
         if (!btn) return;
 
-        const message = btn.getAttribute("data-contact-message") || "";
-        const title = btn.getAttribute("data-contact-title") || "Информация";
+        const message =
+            btn.getAttribute("data-contact-message") ||
+            "Заповядайте в нашия шоурум и се уверете";
+
+        const title =
+            btn.getAttribute("data-contact-title") ||
+            "Информация";
 
         document.getElementById("contactModalTitle").textContent = title;
         document.getElementById("contactModalText").textContent = message;

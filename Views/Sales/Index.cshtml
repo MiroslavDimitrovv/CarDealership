@@ -14,12 +14,10 @@
     </div>
 
     <div class="row">
-        <!-- Filters (desktop) -->
         <div class="col-md-3 d-none d-md-block">
             @await Html.PartialAsync("_CarFiltersSale", Model.Filter)
         </div>
 
-        <!-- Cards -->
         <div class="col-12 col-md-9">
             <div class="text-muted mb-2">Намерени: @Model.Cars.Count</div>
 
@@ -29,7 +27,6 @@
                     <div class="col-12 col-lg-6">
                         <div class="card h-100 shadow-sm">
 
-                            <!-- снимка НЕ до бордера -->
                             <div class="p-2 pb-0">
                                 <img src="~/images/cars/@(c.ImageFileName ?? "placeholder.jpg")"
                                      class="w-100 rounded"
@@ -89,7 +86,6 @@
     </div>
 </div>
 
-<!-- Offcanvas filters (mobile) -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="filtersCanvasSale">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title">Филтри</h5>

@@ -22,14 +22,12 @@ namespace CarDealership.Controllers
                 .Where(c => c.Status == Car.StatusType.Available &&
                             c.Type == Car.ListingType.ForSale);
 
-            // dropdown options (винаги от baseQuery, без филтри)
             filter.Brands = await baseQuery.Select(c => c.Brand).Distinct().OrderBy(x => x).ToListAsync();
             filter.FuelTypes = await baseQuery.Select(c => c.FuelType).Distinct().OrderBy(x => x).ToListAsync();
             filter.Transmissions = await baseQuery.Select(c => c.Transmission).Distinct().OrderBy(x => x).ToListAsync();
 
             var q = baseQuery;
 
-            // search q (старото)
             if (!string.IsNullOrWhiteSpace(filter.Q))
             {
                 var term = filter.Q.Trim();
@@ -40,7 +38,6 @@ namespace CarDealership.Controllers
                     c.FuelType.Contains(term));
             }
 
-            // filters
             if (!string.IsNullOrWhiteSpace(filter.Brand))
                 q = q.Where(c => c.Brand == filter.Brand);
 
