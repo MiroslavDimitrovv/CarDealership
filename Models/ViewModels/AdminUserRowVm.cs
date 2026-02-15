@@ -15,6 +15,7 @@
         public IList<string> Roles { get; set; } = new List<string>();
         public int RentalsCount { get; set; }
 
+        public bool IsAdmin => Roles.Any(r => r == "Admin");
         public string DisplayName
         {
             get

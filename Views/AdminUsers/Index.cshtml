@@ -45,16 +45,20 @@
                     <th>Потребител</th>
                     <th style="width:200px">Телефон</th>
                     <th style="width:260px">Email</th>
-                    <th style="width:180px">Действия</th>
+                    <th style="width:260px">Действия</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var u in Model)
                 {
+                    var roleModalId = $"role-{u.Id}";
+                    var isAdmin = u.IsAdmin;
+
                     <tr>
                         <td>
                             <div class="fw-semibold">@u.DisplayName</div>
                             <div class="text-muted small">@u.Email</div>
+
                             @if (u.Roles.Any())
                             {
                                 <div class="mt-1">
@@ -70,12 +74,11 @@
                             @(string.IsNullOrWhiteSpace(u.PhoneNumber) ? "(няма)" : u.PhoneNumber)
                         </td>
 
-                        <td>
-                            @u.Email
-                        </td>
+                        <td>@u.Email</td>
 
                         <td class="text-nowrap">
                             <div class="d-flex flex-wrap gap-2">
+
                                 <a class="btn btn-sm btn-outline-primary"
                                    asp-action="Rentals"
                                    asp-route-userId="@u.Id">
@@ -88,11 +91,61 @@
                                     Редакция
                                 </a>
 
+                                <button type="button"
+                                        class="btn btn-sm @(isAdmin ? "btn-outline-warning" : "btn-outline-success")"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#@roleModalId">
+                                    @(isAdmin ? "Премахни Admin" : "Направи Admin")
+                                </button>
+
                                 <button class="btn btn-sm btn-outline-danger"
                                         data-bs-toggle="modal"
                                         data-bs-target="#del-@u.Id">
                                     Изтрий
                                 </button>
+                            </div>
+
+                            <div class="modal fade" id="@roleModalId" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Смяна на роля</h5>
+                                            <button class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @if (isAdmin)
+                                            {
+                                                <div>
+                                                    Сигурен ли си, че искаш да премахнеш <strong>Admin</strong> роля на:
+                                                    <strong>@u.Email</strong>?
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div>
+                                                    Сигурен ли си, че искаш да направиш <strong>@u.Email</strong> администратор?
+                                                </div>
+                                            }
+
+                                            <div class="text-muted small mt-2">
+                                                Промяната важи веднага (при следващо влизане / refresh на права).
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Отказ</button>
+
+                                            <form asp-action="ToggleAdmin" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="userId" value="@u.Id" />
+                                                <input type="hidden" name="returnQ" value="@q" />
+
+                                                <button class="btn @(isAdmin ? "btn-warning" : "btn-success")" type="submit">
+                                                    @(isAdmin ? "Да, премахни Admin" : "Да, направи Admin")
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="modal fade" id="del-@u.Id" tabindex="-1">

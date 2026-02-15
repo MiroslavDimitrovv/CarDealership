@@ -14,12 +14,18 @@ namespace CarDealership.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IAdminEventLogger _events;
 
-        public AdminUsersController(ApplicationDbContext db, UserManager<ApplicationUser> userManager, IAdminEventLogger events)
+        public AdminUsersController(
+            ApplicationDbContext db,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IAdminEventLogger events)
         {
             _db = db;
             _userManager = userManager;
+            _roleManager = roleManager;
             _events = events;
         }
 
@@ -48,7 +54,7 @@ namespace CarDealership.Controllers
             {
                 query = query.Where(x =>
                     x.Email.Contains(term) ||
-                    ((x.FirstName ?? "") + " " + (x.LastName ?? "")).Contains(term) ||
+                    (((x.FirstName ?? "") + " " + (x.LastName ?? "")).Contains(term)) ||
                     (x.Phone ?? "").Contains(term)
                 );
             }
@@ -79,6 +85,93 @@ namespace CarDealership.Controllers
 
             ViewBag.Q = q;
             return View(rows);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleAdmin(string userId, string? q)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                TempData["Error"] = "Невалиден потребител.";
+                return RedirectToAction(nameof(Index), new { q });
+            }
+
+            var me = _userManager.GetUserId(User);
+            if (me == userId)
+            {
+                TempData["Error"] = "Не можеш да променяш собствената си админ роля.";
+                return RedirectToAction(nameof(Index), new { q });
+            }
+
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+            {
+                var createRole = await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                if (!createRole.Succeeded)
+                {
+                    TempData["Error"] = "Неуспешно създаване на роля Admin.";
+                    return RedirectToAction(nameof(Index), new { q });
+                }
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["Error"] = "Потребителят не е намерен.";
+                return RedirectToAction(nameof(Index), new { q });
+            }
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (isAdmin)
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+                if (admins.Count <= 1)
+                {
+                    TempData["Error"] = "Не можеш да премахнеш последния администратор.";
+                    return RedirectToAction(nameof(Index), new { q });
+                }
+
+                var res = await _userManager.RemoveFromRoleAsync(user, "Admin");
+                if (!res.Succeeded)
+                {
+                    TempData["Error"] = "Грешка при премахване на Admin роля: " +
+                                        string.Join("; ", res.Errors.Select(e => e.Description));
+                    return RedirectToAction(nameof(Index), new { q });
+                }
+
+                await _events.LogAsync(
+                    "UserRoleChanged",
+                    "Премахната Admin роля",
+                    $"Removed Admin from userId={userId}",
+                    targetUserId: userId,
+                    targetEmail: user.Email
+                );
+
+                TempData["Success"] = $"Потребителят {user.Email} вече НЕ е администратор.";
+            }
+            else
+            {
+                var res = await _userManager.AddToRoleAsync(user, "Admin");
+                if (!res.Succeeded)
+                {
+                    TempData["Error"] = "Грешка при добавяне на Admin роля: " +
+                                        string.Join("; ", res.Errors.Select(e => e.Description));
+                    return RedirectToAction(nameof(Index), new { q });
+                }
+
+                await _events.LogAsync(
+                    "UserRoleChanged",
+                    "Добавена Admin роля",
+                    $"Added Admin to userId={userId}",
+                    targetUserId: userId,
+                    targetEmail: user.Email
+                );
+
+                TempData["Success"] = $"Потребителят {user.Email} вече е администратор.";
+            }
+
+            return RedirectToAction(nameof(Index), new { q });
         }
 
         [HttpGet]
@@ -186,7 +279,6 @@ namespace CarDealership.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string userId)
         {
-
             var me = _userManager.GetUserId(User);
             if (me == userId)
             {
@@ -198,13 +290,12 @@ namespace CarDealership.Controllers
             if (user == null) return NotFound();
 
             await _events.LogAsync(
-    "UserDeleted",
-    "Изтрит потребител",
-    $"Deleted userId={userId}",
-    targetUserId: userId,
-    targetEmail: user.Email
-);
-
+                "UserDeleted",
+                "Изтрит потребител",
+                $"Deleted userId={userId}",
+                targetUserId: userId,
+                targetEmail: user.Email
+            );
 
             var rentals = await _db.Rentals.Where(r => r.UserId == userId).ToListAsync();
             _db.Rentals.RemoveRange(rentals);
